@@ -1,0 +1,57 @@
+/* Translation Tooltip - Enhanced Dark Theme */
+.translation-tooltip,
+#translation-tooltip {
+    position: fixed;
+    background: rgba(31, 41, 55, 0.95);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    opacity: 1;
+    transform: translateY(0);
+    max-width: 280px;
+    line-height: 1.5;
+    backdrop-filter: blur(8px);
+}
+
+/* Tooltip Visible State */
+.translation-tooltip.visible,
+#translation-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+    display: block !important;
+}
+
+/* Tooltip Hidden State */
+.translation-tooltip.hidden,
+#translation-tooltip.hidden {
+    opacity: 0;
+    transform: translateY(5px);
+    display: block !important;
+    pointer-events: none;
+}
+
+/* Tooltip Content Styling */
+.translation-tooltip strong,
+#translation-tooltip strong {
+    color: #A5B4FC;
+    font-weight: 600;
+}
+
+/* Optional: Tooltip Arrow (if needed) */
+.translation-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px 5px 0;
+    border-style: solid;
+    border-color: rgba(31, 41, 55, 0.95) transparent transparent transparent;
+}

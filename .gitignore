@@ -1,0 +1,57 @@
+# 環境變數和敏感資訊
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 備份檔案
+*.bak
+*.backup
+*_backup.*
+*_old.*
+*_broken.*
+*_fixed.*
+*_restored.*
+
+# 測試檔案
+*_test.*
+test_*.py
+test_*.js
+
+# 日誌檔案
+*.log
+
+# 作業系統
+Thumbs.db
+desktop.ini
+
+# 臨時檔案
+*.tmp
+*.temp
+~$*
