@@ -1,0 +1,130 @@
+/**
+ * 單字服務
+ * 處理單字資料的過濾、搜尋、統計等邏輯
+ */
+
+const WordService = {
+    /**
+     * 根據等級更新活動單字列表
+     * @param {Array} levels - 等級陣列
+     */
+    updateActiveWordList(levels) {
+        // 合併內建單字和使用者單字
+        const allWords = [...fullWordList, ...AppState.getUserWords()];
+
+        // 過濾掉被封鎖的單字
+        const blockedWords = AppState.getBlockedWords();
+        const filteredWords = allWords.filter(word =>
+            !blockedWords.includes(word.english)
+        );
+
+        // 根據等級篩選
+        const activeWords = filteredWords.filter(word =>
+            levels.includes(word.level)
+        );
+
+        AppState.setActiveWordList(activeWords);
+        console.log(`Filtered ${activeWords.length} words for levels: ${levels.join(', ')}`);
+
+        return activeWords;
+    },
+
+    /**
+     * 計算各等級的單字數量
+     * @returns {Object} 各等級的單字數量
+     */
+    getWordCounts() {
+        // 檢查 fullWordList 是否存在
+        if (typeof fullWordList === 'undefined' || !Array.isArray(fullWordList)) {
+            console.warn('fullWordList not available, skipping word count update');
+            return null;
+        }
+
+        // 計算各等級的單字數量
+        const allWords = [...fullWordList, ...AppState.getUserWords()];
+        const counts = {
+            J1: 0, J2: 0, J3: 0,
+            H1: 0, H2: 0, H3: 0,
+            ADV: 0
+        };
+
+        allWords.forEach(word => {
+            if (counts.hasOwnProperty(word.level)) {
+                counts[word.level]++;
+            }
+        });
+
+        // 計算總計
+        const jhTotal = counts.J1 + counts.J2 + counts.J3;
+        const shTotal = counts.H1 + counts.H2 + counts.H3;
+        const allTotal = jhTotal + shTotal + counts.ADV;
+
+        return {
+            ...counts,
+            JH_TOTAL: jhTotal,
+            SH_TOTAL: shTotal,
+            ALL_TOTAL: allTotal
+        };
+    },
+
+    /**
+     * 新增使用者單字
+     * @param {Object} wordData - 單字資料
+     */
+    addUserWord(wordData) {
+        const { english, pos, translation, level, exampleEn, exampleZh } = wordData;
+
+        if (!english || !translation) {
+            throw new Error('請至少填寫英文單字和中文翻譯！');
+        }
+
+        const newWord = {
+            english,
+            pos,
+            translation,
+            level,
+            family_id: `USER_${Date.now()}`,
+            example_en: exampleEn,
+            example_zh: exampleZh
+        };
+
+        const userWords = AppState.getUserWords();
+        userWords.push(newWord);
+        StorageService.saveUserWords(userWords);
+
+        return newWord;
+    },
+
+    /**
+     * 刪除使用者單字
+     * @param {string} english - 英文單字
+     */
+    deleteUserWord(english) {
+        const userWords = AppState.getUserWords();
+        const filtered = userWords.filter(w => w.english !== english);
+        StorageService.saveUserWords(filtered);
+        return true;
+    },
+
+    /**
+     * 搜尋單字
+     * @param {Array} wordList - 要搜尋的單字列表（字串陣列）
+     * @returns {Object} { validWords, invalidWords }
+     */
+    searchWords(wordList) {
+        const allWords = [...fullWordList, ...AppState.getUserWords()];
+        const validWords = [];
+        const invalidWords = [];
+
+        wordList.forEach(word => {
+            const found = allWords.find(w => w.english.toLowerCase() === word.toLowerCase());
+            if (found) {
+                validWords.push(found);
+            } else {
+                invalidWords.push(word);
+            }
+        });
+
+        return { validWords, invalidWords };
+    }
+};
