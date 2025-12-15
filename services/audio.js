@@ -3,7 +3,10 @@
  * 封裝 Web Speech API (TTS) 功能
  */
 
-const AudioService = {
+import { AppState } from '../core/state.js';
+import { AppConfig } from '../core/config.js';
+
+export const AudioService = {
     /**
      * 朗讀文字
      * @param {string} text - 要朗讀的文字
@@ -68,5 +71,19 @@ const AudioService = {
      */
     wait(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+    // --- Compatibility / Helpers ---
+    speak(text) {
+        this.speakText(text);
+    },
+
+    playCorrectSound() {
+        // Simple fallback using TTS or an Audio object if available
+        this.speakText("Correct!");
+    },
+
+    playErrorSound() {
+        this.speakText("Wrong.");
     }
 };

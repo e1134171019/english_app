@@ -3,616 +3,448 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>個人英文練習網站</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- PWA 支援 -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#6366F1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="英文字卡">
-
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>英文練習 App</title>
+  <link rel="stylesheet" href="style.css?v=20251215_30">
 </head>
 
 <body>
 
-  <!-- 翻譯浮窗 -->
-  <div id="translation-tooltip" class="translation-tooltip"></div>
+  <!-- App Shell: Central Window -->
+  <div id="app-shell">
 
-  <!-- 首頁畫面 -->
-  <div id="home-screen" class="screen active">
-    <h1 class="app-title">個人英文練習網站</h1>
+    <!-- 1. Top App Bar -->
+    <header class="top-app-bar">
+      <!-- Left Action -->
+      <button id="nav-back-btn" class="icon-btn hidden" aria-label="返回">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+        </svg>
+      </button>
+      <div id="nav-spacer-left" class="icon-btn" style="visibility: hidden;"></div>
 
-    <div class="menu-container">
-      <div class="menu-grid">
-        <!-- 單字練習：先進入「學制 / 年級」選單 -->
-        <button class="menu-btn" data-target="level-select-screen" data-mode="practice">
-          <span class="menu-icon">📖</span>
-          <span class="menu-text">單字練習</span>
-        </button>
-        <!-- 聽力測驗：一樣進入同一個 level-select，但 mode 是 quiz -->
-        <button class="menu-btn" data-target="level-select-screen" data-mode="quiz">
-          <span class="menu-icon">🎧</span>
-          <span class="menu-text">聽力測驗</span>
-        </button>
-        <!-- 高中進階訓練 -->
-        <button class="menu-btn" data-target="advanced-screen">
-          <span class="menu-icon">🎓</span>
-          <span class="menu-text">高中進階訓練</span>
-        </button>
-        <!-- 新增單字 -->
-        <button class="menu-btn" data-target="add-screen">
-          <span class="menu-icon">➕</span>
-          <span class="menu-text">新增單字</span>
-        </button>
-        <!-- 刪除單字 -->
-        <button class="menu-btn" data-target="delete-screen">
-          <span class="menu-icon">🗑️</span>
-          <span class="menu-text">刪除單字</span>
-        </button>
-        <!-- 自訂義訓練 -->
-        <button class="menu-btn" data-target="custom-training-screen">
-          <span class="menu-icon">✨</span>
-          <span class="menu-text">自訂義訓練</span>
-        </button>
-      </div>
-    </div>
-  </div>
+      <!-- Title -->
+      <div class="app-title" id="app-title">英文練習</div>
 
-  <!-- 單字練習畫面 -->
-  <div id="practice-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">單字練習</h2>
+      <!-- Right Action -->
+      <button id="nav-more-btn" class="icon-btn" aria-label="更多">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z">
+          </path>
+        </svg>
+      </button>
+    </header>
 
-    <!-- 卡片 -->
-    <div class="card-container">
-      <div class="card" id="flashcard">
-        <!-- 正面（中文） -->
-        <div class="card-face card-front">
-          <div class="chinese-word" id="card-chinese">載入中...</div>
-          <button class="flip-hint-btn" onclick="flipCard()">查看英文</button>
+    <!-- 2. Main Content (Scrollable Screens) -->
+    <main id="main-content">
+
+      <!-- A. Home Screen -->
+      <section id="home-screen" class="screen active">
+        <div class="card home-header-card">
+          <div style="font-size: var(--text-sm); color: var(--text-sub);">今日目標達成率</div>
+          <div
+            style="position: relative; height: 8px; background: var(--border-color); border-radius: 4px; margin: 12px 0; overflow: hidden;">
+            <div style="width: 45%; height: 100%; background: var(--primary);"></div>
+          </div>
+          <div class="stats-summary">
+            <div class="stat-item">
+              <div class="value">0</div>
+              <div class="label">已練習</div>
+            </div>
+            <div class="stat-item">
+              <div class="value">0</div>
+              <div class="label">待複習</div>
+            </div>
+          </div>
         </div>
 
-        <!-- 背面（英文） -->
-        <div class="card-face card-back">
-          <div class="header-row">
-            <div class="header-left">
-              <span class="english-word" id="card-english">Word</span>
-              <button class="icon-btn" title="朗讀單字" onclick="speakText(currentCard.word, 1.0)">
-                🔊
-              </button>
+        <!-- Bento Grid Menu -->
+        <h3 style="font-size: var(--text-sm); color: var(--text-hint); margin: 0 0 8px 4px;">開始練習</h3>
+        <div class="bento-grid">
+          <!-- Hero Item -->
+          <div class="bento-item hero" onclick="app.navigate('level-select-screen', {mode: 'practice'})">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path
+                d="M12 6.09L14.77 12H9.23L12 6.09M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.19-2h4.38L12 11.35 9.81 18zm3.38-10.9h-2.38l-2.03 4.4h6.44l-2.03-4.4z">
+              </path>
+            </svg>
+            <div style="text-align: left;">
+              <div class="label">單字練習</div>
+              <div style="font-size: 10px; color: var(--text-sub);">Flashcards Mode</div>
             </div>
-            <span class="pos" id="card-pos">n.</span>
           </div>
 
-          <span class="phonetic" id="card-phonetic">/.../</span>
-
-          <div class="section-title">解釋</div>
-          <div class="explanation" id="card-meaning"></div>
-
-          <div class="section-title">搭配詞</div>
-          <ul class="collocation-list" id="back-collocations"></ul>
-
-          <div class="section-title">例句</div>
-
-          <div class="sentence-box" id="card-sentence-box"
-            onclick="if(window.getSelection().toString().length === 0) speakText(currentCard.sentence1.en, 0.9)">
-            <span class="sentence-en" id="card-example-en"></span>
-            <span class="sentence-cn" id="card-example-zh"></span>
+          <div class="bento-item" onclick="app.navigate('level-select-screen', {mode: 'quiz'})">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path>
+            </svg>
+            <div class="label">聽力練習</div>
           </div>
 
-          <button class="flip-back-btn-large" onclick="flipCard()" title="返回中文">
-            ↻
+          <div class="bento-item" onclick="app.navigate('verb3-screen')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path>
+            </svg>
+            <div class="label">動詞三態</div>
+          </div>
+
+          <div class="bento-item" onclick="app.navigate('custom-training-screen')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path
+                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z">
+              </path>
+            </svg>
+            <div class="label">我的專屬</div>
+          </div>
+
+          <div class="bento-item" onclick="app.navigate('add-screen')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+            </svg>
+            <div class="label">新增單字</div>
+          </div>
+
+          <div class="bento-item" onclick="app.navigate('delete-screen')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+            </svg>
+            <div class="label">管理刪除</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- B. Level Select Screen -->
+      <section id="level-select-screen" class="screen">
+        <h2 style="font-size: var(--text-lg); margin-bottom: 16px;">Step 1: 選擇學制</h2>
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="input-group">
+            <label class="nav-label" style="font-size: 12px; margin-bottom: 8px; display: block;">教育階段</label>
+            <div class="chip-group" id="tier1-chips">
+              <button class="chip" data-val="JH">國中 Junior High</button>
+              <button class="chip" data-val="SH">高中 Senior High</button>
+              <button class="chip" data-val="ADV">進階 Advanced</button>
+            </div>
+          </div>
+        </div>
+
+        <h2 style="font-size: var(--text-lg); margin-bottom: 16px;">Step 2: 選擇等級</h2>
+        <div class="card" id="tier2-container">
+          <div class="chip-group" id="tier2-chips">
+            <!-- Dynamic Injection -->
+            <div style="padding: 20px; color: var(--text-hint); text-align: center; width: 100%;">請先選擇學制</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top: 32px;" onclick="app.confirmLevelSelection()">開始</button>
+      </section>
+
+      <!-- C. Practice Screen -->
+      <section id="practice-screen" class="screen">
+        <!-- Progress Header -->
+        <div
+          style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: var(--text-sm); color: var(--text-sub);">
+          <span id="practice-mode-label">單字練習</span>
+          <span id="practice-counter">1 / 20</span>
+        </div>
+        <div style="height: 4px; background: var(--border-color); border-radius: 2px; margin-bottom: 24px;">
+          <div id="practice-progress"
+            style="width: 5%; height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.3s;">
+          </div>
+        </div>
+
+        <!-- Flashcard Area -->
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+          <div class="flashcard-container">
+            <div id="flashcard-stage" class="flashcard-stage">
+              <div id="flashcard" class="flashcard">
+                <!-- Front -->
+                <div class="card-face front">
+                  <div class="chip" style="position: absolute; top: 16px; left: 16px; pointer-events: none;">Level <span
+                      id="card-level-badge"></span></div>
+                  <div id="card-school-label"
+                    style="position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--text-sub);"></div>
+                  <h2 id="card-front-text" style="font-size: 2.5rem; margin: auto;">中文</h2>
+                  <div style="color: var(--text-hint); font-size: var(--text-sm);">點擊翻面</div>
+                </div>
+
+                <!-- Back -->
+                <div class="card-face back">
+                  <div
+                    style="width: 100%; display: flex; justify-content: space-between; align-items: start; margin-bottom: 2px;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <span class="chip"
+                        style="background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-sub);"
+                        id="card-pos">n.</span>
+                    </div>
+
+                    <button class="icon-btn" onclick="event.stopPropagation(); app.speakCurrentWord();"
+                      style="color: var(--text-main);">
+                      <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                        <path
+                          d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z">
+                        </path>
+                      </svg>
+                    </button>
+                  </div>
+                  <h2 id="card-back-text"
+                    style="font-size: 2.2rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">English
+                  </h2>
+                  <div id="card-phonetic"
+                    style="color: var(--text-sub); margin-bottom: 24px; font-family: monospace; font-size: 1.1rem;">
+                    /phonetic/</div>
+
+                  <!-- Example Sentence Area -->
+                  <div style="width: 100%; margin-bottom: 24px;">
+                    <!-- English Block -->
+                    <div
+                      style="background: var(--bg-body); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; align-items: flex-start; justify-content: space-between;">
+                      <div id="card-sentence-en"
+                        style="line-height: 1.5; font-size: 1.1rem; color: var(--text-main); flex: 1; margin-right: 8px;">
+                      </div>
+                      <button class="icon-btn" onclick="event.stopPropagation(); app.speakExample();"
+                        style="width: 24px; height: 24px; color: var(--primary-color); flex-shrink: 0; padding: 0;">
+                        <svg viewBox="0 0 24 24">
+                          <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z">
+                          </path>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- Chinese Block -->
+                    <div
+                      style="background: var(--bg-body); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: var(--text-sm); color: var(--text-main);">
+                      <div id="card-sentence-zh"></div>
+                    </div>
+                  </div>
+
+                  <!-- Related Info (Word Family / Verb Forms) -->
+                  <div id="card-related-info"
+                    style="font-size: 0.9rem; line-height: 1.5; color: var(--text-sub); width: 100%; text-align: left; padding-top: 12px; border-top: 1px dashed var(--border-color); margin-top: auto;">
+                    <!-- Dynamic content -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div
+          style="display: flex; align-items: center; justify-content: center; gap: 32px; width: 100%; max-width: 280px; margin: 24px auto 100px auto;">
+          <button class="icon-btn icon-btn-primary" style="width: 48px; height: 48px; border: none;"
+            onclick="app.prevCard()">
+            <svg viewBox="0 0 24 24">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+            </svg>
+          </button>
+
+          <button class="btn btn-text" id="autoplay-btn" onclick="app.toggleAutoPlay()">
+            <svg style="width: 20px; height: 20px; margin-right: 6px;" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"></path>
+            </svg>
+            自動播放
+          </button>
+
+          <button class="icon-btn icon-btn-primary" style="width: 48px; height: 48px; border: none;"
+            onclick="app.nextCard()">
+            <svg viewBox="0 0 24 24">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+            </svg>
           </button>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- 底部控制列 -->
-    <div class="bottom-controls">
-      <div class="nav-bar">
-        <button class="nav-btn" id="prevBtn" onclick="prevCard()">&lt;</button>
-        <span id="page-indicator" class="page-indicator">1 / 1</span>
-        <button class="nav-btn" id="nextBtn" onclick="nextCard()">&gt;</button>
-      </div>
-
-      <div class="settings-bar">
-        <span class="label">語速</span>
-        <input type="range" id="speed-range" min="0.5" max="1.5" step="0.1" value="1.0"
-          oninput="updateSpeed(this.value)">
-        <button class="auto-play-btn" id="auto-play-btn" onclick="autoPlayCurrent()">
-          ▶ 自動朗讀
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 新增單字 Modal -->
-  <div class="modal-overlay" id="add-modal">
-    <div class="modal">
-      <h2>✨ 新增單字（手動輸入）</h2>
-
-      <div class="form-group">
-        <label>英文單字</label>
-        <input type="text" id="input-word" placeholder="例如：serendipity">
-      </div>
-
-      <div class="scroll-area">
-        <div class="form-group">
-          <label>正面中文（大字顯示）</label>
-          <input type="text" id="input-front" placeholder="例如：意外的驚喜；機緣巧合">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group half">
-            <label>詞性</label>
-            <input type="text" id="input-pos" placeholder="n. / v. / adj. ...">
+      <!-- D. Quiz Screen -->
+      <section id="quiz-screen" class="screen">
+        <div style="text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="card"
+            style="display: inline-flex; padding: 20px; border-radius: 50%; margin-bottom: 16px; cursor: pointer; transition: transform 0.1s;"
+            onclick="app.speakQuizWord()">
+            <svg style="width: 48px; height: 48px; fill: var(--primary);" viewBox="0 0 24 24">
+              <path
+                d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z">
+              </path>
+            </svg>
           </div>
-          <div class="form-group half">
-            <label>音標（可略）</label>
-            <input type="text" id="input-phonetic" placeholder="/ˌser.ənˈdɪp.ə.t̬i/">
+          <div style="color: var(--text-hint); margin-bottom: 20px; font-size: 0.9rem;">點擊播放圖示重聽</div>
+
+          <input type="text" id="quiz-input" class="input-field" placeholder="輸入聽到的單字" autocomplete="off"
+            style="text-align: center; font-size: 1.5rem; max-width: 280px; margin-bottom: 16px;">
+
+          <div id="quiz-feedback" class="hidden"
+            style="margin-top: 8px; margin-bottom: 16px; padding: 8px; border-radius: 8px;"></div>
+
+          <div style="display: flex; gap: 12px; width: 100%; max-width: 280px;">
+            <button id="quiz-skip-btn" class="btn btn-outline" style="flex: 1;"
+              onclick="app.checkQuiz(true)">跳過</button>
+            <button id="quiz-submit-btn" class="btn btn-primary" style="flex: 1;" onclick="app.checkQuiz()">送出</button>
+            <button id="quiz-next-btn" class="btn btn-primary hidden"
+              style="flex: 1; background: var(--success); border-color: var(--success);"
+              onclick="app.nextQuizQuestion()">下一題</button>
+          </div>
+
+          <!-- Navigation Row (Prev / Count / Next) -->
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 350px; margin-top: 24px;">
+            <button class="btn btn-outline" style="min-width: 80px;" onclick="app.prevQuizQuestion()">上一題</button>
+            <span id="quiz-counter"
+              style="font-weight: 500; color: var(--text-sub); white-space: nowrap; margin: 0 12px;">1 / 10</span>
+            <button class="btn btn-outline" style="min-width: 80px;" onclick="app.nextQuizQuestion()">下一題</button>
           </div>
         </div>
+      </section>
 
-        <div class="form-group">
-          <label>英文解釋 + 中文</label>
-          <textarea id="input-meaning" rows="3"
-            placeholder="A pleasant surprise that happens by chance.（意外的驚喜）"></textarea>
+      <!-- E. Verb3 Screen -->
+      <section id="verb3-screen" class="screen">
+        <div class="chip-group" style="justify-content: center; margin-bottom: 24px;">
+          <button class="chip active" id="v3-tab-jh" onclick="app.switchVerb3Level('JH')">國中 (JH)</button>
+          <button class="chip" id="v3-tab-sh" onclick="app.switchVerb3Level('SH')">高中 (SH)</button>
         </div>
 
-        <div class="form-group">
-          <label>搭配詞 / 相似家族（每行一個）</label>
-          <textarea id="input-collocations" rows="3"
-            placeholder="have the opportunity to ...（有機會...）&#10;opportune（適當的）&#10;opportunist（機會主義者）"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>例句（英文）</label>
-          <input type="text" id="input-sent1-en"
-            placeholder="Traveling is a great opportunity to broaden your horizon.">
-        </div>
-        <div class="form-group">
-          <label>例句（中文）</label>
-          <input type="text" id="input-sent1-cn" placeholder="旅行是擴展視野的絕佳機會。">
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeAddModal()">取消</button>
-        <button class="tool-btn primary" onclick="saveNewWord()">💾 儲存卡片</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI 生成 Modal -->
-  <div class="modal-overlay" id="ai-modal">
-    <div class="modal">
-      <h2>✨ AI 生成單字卡</h2>
-      <p style="color: #6B7280; font-size: 0.9rem; margin-top: 0;">
-        輸入英文單字，AI 將自動生成完整的學習卡片（包含詞性、音標、解釋、搭配詞和例句）
-      </p>
-      <div class="form-group">
-        <label>英文單字</label>
-        <input type="text" id="ai-word-input" placeholder="例如：opportunity, serendipity">
-      </div>
-      <div id="ai-loading" style="display: none; text-align: center; padding: 20px;">
-        <div class="spinner"></div>
-        <p style="color: #6B7280; margin-top: 10px;">AI 正在生成中，請稍候...</p>
-      </div>
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeAIModal()">取消</button>
-        <button class="tool-btn primary" id="ai-generate-btn" onclick="generateWithAI()">
-          🤖 AI 生成
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 管理單字庫 Modal -->
-  <div class="modal-overlay" id="manage-modal">
-    <div class="modal modal-large">
-      <h2>📚 管理單字庫</h2>
-      <p style="color: #6B7280; font-size: 0.9rem; margin-top: 0;">
-        共 <strong id="total-words">0</strong> 個單字
-      </p>
-      <div class="word-list" id="word-list">
-        <!-- 單字列表將由 JavaScript 動態生成 -->
-      </div>
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeManageModal()">關閉</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 匯入 Modal -->
-  <div class="modal-overlay" id="import-modal">
-    <div class="modal">
-      <h2>📥 匯入 JSON 備份</h2>
-      <textarea id="json-input" rows="8" placeholder="貼上之前備份的 JSON 陣列（[ { word: ... }, ... ]）"></textarea>
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeImportModal()">取消</button>
-        <button class="tool-btn success" onclick="processImport()">確定匯入</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 測驗設定 Modal -->
-  <div class="modal-overlay" id="quiz-setup-modal">
-    <div class="modal">
-      <h2>📝 測驗設定</h2>
-
-      <div class="form-group">
-        <label>題目數量</label>
-        <select id="quiz-count">
-          <option value="10">10 題</option>
-          <option value="20" selected>20 題</option>
-          <option value="50">50 題</option>
-          <option value="all">全部單字</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>選題方式</label>
-        <select id="quiz-mode">
-          <option value="random">隨機抽選</option>
-          <option value="select">手動選取</option>
-        </select>
-      </div>
-
-      <div id="word-selection" style="display: none;">
-        <label>選擇要測驗的單字（點擊選取/取消）</label>
-        <div class="word-selection-list" id="word-selection-list"></div>
-      </div>
-
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeQuizSetup()">取消</button>
-        <button class="tool-btn success" onclick="startQuiz()">開始測驗</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 測驗進行中 Modal -->
-  <div class="modal-overlay" id="quiz-modal">
-    <div class="modal modal-large">
-      <button class="modal-close-btn" onclick="closeQuizWithConfirm()" title="關閉測驗">✕</button>
-      <div class="quiz-header">
-        <h2>📝 單字測驗</h2>
-        <div class="quiz-progress">
-          <span id="quiz-current">1</span> / <span id="quiz-total">20</span>
-        </div>
-      </div>
-
-      <div class="quiz-progress-bar">
-        <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
-      </div>
-
-      <div class="quiz-question">
-        <div class="quiz-chinese" id="quiz-chinese">中文</div>
-        <div class="quiz-pos" id="quiz-pos">n.</div>
-      </div>
-
-      <div class="quiz-input-group">
-        <label>請輸入英文單字（不分大小寫）</label>
-        <input type="text" id="quiz-answer" placeholder="輸入英文單字..." autocomplete="off"
-          onkeypress="if(event.key==='Enter') submitAnswer()">
-      </div>
-
-      <div class="quiz-actions">
-        <button class="tool-btn" onclick="skipQuestion()">跳過</button>
-        <button class="tool-btn primary" onclick="submitAnswer()">提交答案</button>
-        <button class="tool-btn warning" onclick="finishQuizEarly()">結束測驗</button>
-      </div>
-
-      <div class="quiz-feedback" id="quiz-feedback"></div>
-    </div>
-  </div>
-
-  <!-- 測驗結果 Modal -->
-  <div class="modal-overlay" id="quiz-result-modal">
-    <div class="modal modal-large">
-      <h2>🎉 測驗完成！</h2>
-
-      <div class="result-score">
-        <div class="score-circle">
-          <div class="score-number" id="score-number">0</div>
-          <div class="score-label">分</div>
-        </div>
-        <div class="score-stats">
-          <div class="stat-item">
-            <span class="stat-value correct" id="correct-count">0</span>
-            <span class="stat-label">答對</span>
+        <div class="card" style="text-align: center;">
+          <div id="v3-header-info"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-hint);">
+            <div id="v3-level-badge" class="badge">Level</div>
+            <div id="v3-counter">1 / 10</div>
           </div>
-          <div class="stat-item">
-            <span class="stat-value wrong" id="wrong-count">0</span>
-            <span class="stat-label">答錯</span>
+
+          <div style="font-size: var(--text-sm); color: var(--text-hint);">Base Form (原型)</div>
+          <h2 id="v3-base" style="font-size: 2.2rem; margin: 4px 0 8px; color: var(--primary);">go</h2>
+          <div id="v3-zh" style="font-size: 1.25rem; font-weight: 500; margin-bottom: 24px;">去</div>
+
+          <div style="text-align: left; margin-bottom: 16px;">
+            <label style="font-size: var(--text-xs); margin-bottom: 4px; display: block; color: var(--text-sub);">Past
+              Tense (過去式)</label>
+            <input type="text" id="v3-past" class="input-field" autocomplete="off" placeholder="例如: went">
           </div>
-          <div class="stat-item">
-            <span class="stat-value skip" id="skip-count">0</span>
-            <span class="stat-label">跳過</span>
+
+          <div style="text-align: left; margin-bottom: 24px;">
+            <label style="font-size: var(--text-xs); margin-bottom: 4px; display: block; color: var(--text-sub);">Past
+              Participle (過去分詞)</label>
+            <input type="text" id="v3-pp" class="input-field" autocomplete="off" placeholder="例如: gone">
+          </div>
+
+          <!-- Action Area -->
+          <button id="v3-check-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 16px;"
+            onclick="app.checkVerb3()">檢查答案</button>
+
+          <div id="v3-msg" class="hidden"
+            style="margin-bottom: 24px; font-weight: 500; padding: 12px; border-radius: 8px;"></div>
+
+          <!-- Stats for TS-16 -->
+          <div id="v3-stats" class="hidden"
+            style="display: flex; gap: 12px; justify-content: center; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px;">
+            <span>正確: <span id="v3-stat-correct" style="color: var(--success);">0</span></span>
+            <span>錯誤: <span id="v3-stat-wrong" style="color: var(--error);">0</span></span>
+          </div>
+
+          <!-- Stats for TS-16 -->
+          <div id="v3-stats" class="hidden"
+            style="display: flex; gap: 12px; justify-content: center; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px;">
+            <span>正確: <span id="v3-stat-correct" style="color: var(--success);">0</span></span>
+            <span>錯誤: <span id="v3-stat-wrong" style="color: var(--error);">0</span></span>
+          </div>
+
+          <!-- Navigation Area (Bottom) -->
+          <div
+            style="display: flex; gap: 16px; justify-content: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <button id="v3-prev-btn" class="btn btn-outline" style="flex: 1;"
+              onclick="app.prevVerb3Question()">上一個</button>
+            <button id="v3-next-btn" class="btn btn-outline" style="flex: 1;"
+              onclick="app.nextVerb3Question()">下一個</button>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="result-details">
-        <h3>詳細結果</h3>
-        <div id="result-list"></div>
-      </div>
-
-      <div class="modal-actions">
-        <button class="tool-btn" onclick="closeQuizResult()">關閉</button>
-        <button class="tool-btn success" onclick="retryQuiz()">再測一次</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 兩層選單畫面 -->
-  <div id="level-select-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title" id="level-select-title">請選擇學制</h2>
-    <button class="back-btn secondary hidden" id="tier-back-btn" onclick="backToTier1()">← 返回上一層</button>
-
-    <!-- 第一層：學制選擇 -->
-    <div id="tier1-selection" class="level-grid">
-      <button class="level-btn" data-tier1="JH">
-        <span class="level-title">國中 2000</span>
-        <span class="level-desc" id="jh-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-tier1="SH">
-        <span class="level-title">高中 6000</span>
-        <span class="level-desc" id="sh-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-tier1="ADV">
-        <span class="level-title">進階 7000</span>
-        <span class="level-desc" id="adv-count">載入中...</span>
-      </button>
-    </div>
-
-    <!-- 第二層：國中年級選擇 -->
-    <div id="tier2-jh" class="level-grid hidden">
-      <button class="level-btn" data-level="J1">
-        <span class="level-title">國一</span>
-        <span class="level-desc" id="j1-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="J2">
-        <span class="level-title">國二</span>
-        <span class="level-desc" id="j2-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="J3">
-        <span class="level-title">國三</span>
-        <span class="level-desc" id="j3-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="JH_ALL">
-        <span class="level-title">全部國中</span>
-        <span class="level-desc">J1+J2+J3</span>
-      </button>
-    </div>
-
-    <!-- 第二層：高中年級選擇 -->
-    <div id="tier2-sh" class="level-grid hidden">
-      <button class="level-btn" data-level="H1">
-        <span class="level-title">高一</span>
-        <span class="level-desc" id="h1-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="H2">
-        <span class="level-title">高二</span>
-        <span class="level-desc" id="h2-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="H3">
-        <span class="level-title">高三</span>
-        <span class="level-desc" id="h3-count">載入中...</span>
-      </button>
-      <button class="level-btn" data-level="SH_ALL">
-        <span class="level-title">全部高中</span>
-        <span class="level-desc">H1+H2+H3</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- 發音測驗畫面 -->
-  <div id="quiz-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">發音測驗</h2>
-
-    <div class="quiz-container">
-      <div class="quiz-card">
-        <button id="quiz-play-btn" class="big-play-btn" onclick="playQuizAudio()">🔊</button>
-        <p class="hint-text">點擊按鈕聽發音</p>
-
-        <div class="quiz-input-group">
-          <input type="text" id="quiz-input" placeholder="輸入聽到的單字..." autocomplete="off">
-          <button id="quiz-submit-btn" class="action-btn" onclick="submitQuizAnswer()">送出</button>
+      <!-- F. Custom Training -->
+      <section id="custom-training-screen" class="screen">
+        <!-- Input Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <h3 style="margin-top: 0;">匯入單字 (TS-18)</h3>
+          <p style="font-size: var(--text-xs); color: var(--text-sub); margin-bottom: 12px;">輸入英文單字 (逗號/空格/換行分隔)</p>
+          <textarea id="custom-input" class="input-field" rows="4" placeholder="apple banana, book"></textarea>
+          <button class="btn btn-primary" style="margin-top: 12px; width:100%;"
+            onclick="app.processCustomWords()">分析並儲存</button>
         </div>
 
-        <div id="quiz-result" class="quiz-result hidden">
-          <h3 id="quiz-result-status"></h3>
-          <p>正確答案：<span id="quiz-correct-answer"></span></p>
+        <!-- Saved Lists (TS-20) -->
+        <div id="custom-sets-list" style="display: flex; flex-direction: column; gap: 16px; padding-bottom: 80px;">
         </div>
+      </section>
 
-        <button id="quiz-next-btn" class="next-btn" onclick="nextQuizQuestion()" disabled>⟳ 下一題</button>
-      </div>
+      <!-- G. Add/Delete Placeholders -->
+      <section id="add-screen" class="screen">
+        <div class="card">
+          <h3 style="margin:0;">新增單字 (TBD)</h3>
+        </div>
+      </section>
+      <section id="delete-screen" class="screen">
+        <div class="card">
+          <h3 style="margin:0;">管理單字 (TBD)</h3>
+        </div>
+      </section>
 
-      <div class="quiz-progress">
-        <span id="quiz-current">1</span> / <span id="quiz-total">20</span>
-      </div>
-    </div>
+    </main>
+
+    <!-- Global Floating Back Button (TS-23) -->
+    <button id="floating-back-btn" class="floating-back-btn hidden" onclick="app.goBack()">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+      </svg>
+      <span>返回</span>
+    </button>
+
+    <!-- 3. Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="app.navigate('home-screen')">
+        <svg viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+        </svg>
+        <span class="nav-label">首頁</span>
+      </button>
+      <button class="nav-item" onclick="app.navigate('level-select-screen', {mode: 'practice'})">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z">
+          </path>
+        </svg>
+        <span class="nav-label">單字</span>
+      </button>
+      <button class="nav-item" onclick="app.navigate('level-select-screen', {mode: 'quiz'})">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path>
+        </svg>
+        <span class="nav-label">聽力練習</span>
+      </button>
+      <button class="nav-item" onclick="app.navigate('verb3-screen')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z">
+          </path>
+        </svg>
+        <span class="nav-label">三態</span>
+      </button>
+      <!-- 5th Item Custom -->
+      <button class="nav-item" onclick="app.navigate('custom-training-screen')">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z">
+          </path>
+        </svg>
+        <span class="nav-label">我的專屬</span>
+      </button>
+    </nav>
+
+    <!-- Tooltip Layer -->
+    <div id="translation-tooltip" class="translation-tooltip hidden"></div>
+
   </div>
 
-  <!-- 高中進階訓練畫面 -->
-  <div id="advanced-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">高中進階訓練</h2>
-
-    <!-- Tab 導航 -->
-    <div class="tab-nav">
-      <button class="tab-btn active" onclick="switchTab('grimm')">格林法則</button>
-      <button class="tab-btn" onclick="switchTab('verb3')">動詞三態</button>
-    </div>
-
-    <!-- Tab 內容 -->
-    <div class="tab-content">
-      <!-- 格林法則 -->
-      <div id="tab-grimm" class="tab-pane active">
-        <h3>格林法則（Grimm's Law）</h3>
-        <p class="tab-desc">語音演變規律，幫助理解單字之間的關係</p>
-        <div class="grimm-content">
-          <p>格林法則是描述印歐語系中輔音演變的規律。以下是一些常見的對應關係：</p>
-          <ul>
-            <li><strong>p → f</strong>: pater (拉丁文) → father (英文)</li>
-            <li><strong>t → th</strong>: tres (拉丁文) → three (英文)</li>
-            <li><strong>k → h</strong>: centum (拉丁文) → hundred (英文)</li>
-          </ul>
-          <p class="note">更多內容將陸續新增...</p>
-        </div>
-      </div>
-
-      <!-- 動詞三態 -->
-      <div id="tab-verb3" class="tab-pane hidden">
-        <h3>動詞三態練習</h3>
-
-        <!-- 國中/高中選擇 -->
-        <div class="verb-level-select">
-          <button class="verb-level-btn active" onclick="selectVerbLevel('JH')">國中動詞三態</button>
-          <button class="verb-level-btn" onclick="selectVerbLevel('SH')">高中動詞三態</button>
-        </div>
-
-        <!-- 動詞三態測驗區 -->
-        <div id="verb3-quiz-container" class="verb3-container">
-          <div class="verb3-question">
-            <p>原形：<span id="verb3-base" class="verb-form">載入中...</span></p>
-            <p class="verb-translation" id="verb3-translation"></p>
-          </div>
-          <div class="verb3-inputs">
-            <div class="input-group">
-              <label>過去式 (Past):</label>
-              <input type="text" id="verb3-past-input" autocomplete="off">
-            </div>
-            <div class="input-group">
-              <label>過去分詞 (P.P.):</label>
-              <input type="text" id="verb3-pp-input" autocomplete="off">
-            </div>
-          </div>
-          <button id="verb3-submit" class="action-btn" onclick="submitVerb3Answer()">送出</button>
-          <div id="verb3-result" class="verb3-result hidden"></div>
-          <button id="verb3-next" class="next-btn" onclick="nextVerb3Question()" disabled>⟳ 下一題</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 自訂義訓練畫面 -->
-  <div id="custom-training-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">自訂義訓練</h2>
-
-    <div class="custom-training-container">
-      <h3>貼上想練習的單字</h3>
-      <p class="hint-text">一次最多約 100 個單字（換行、逗號或空白分隔皆可）</p>
-
-      <textarea id="custom-words-input" rows="8" placeholder="例如：
-go, come, book
-cat happy
-ability"></textarea>
-
-      <button class="action-btn" onclick="searchCustomWords()">查詢單字</button>
-
-      <div id="custom-results" class="custom-results hidden">
-        <h4>查詢結果</h4>
-        <p>找到 <span id="custom-valid-count">0</span> 個有效單字</p>
-        <p class="invalid-words">找不到的單字：<span id="custom-invalid-list"></span></p>
-
-        <div class="custom-actions">
-          <button class="action-btn" onclick="startCustomPractice()">📖 用這一批開始單字練習</button>
-          <button class="action-btn" onclick="startCustomQuiz()">🎧 用這一批開始發音測驗</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 新增單字畫面 -->
-  <div id="add-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">新增單字</h2>
-
-    <div class="add-container">
-      <div class="form-group">
-        <label>英文單字</label>
-        <input type="text" id="add-english" placeholder="例如：serendipity">
-      </div>
-      <div class="form-group">
-        <label>詞性</label>
-        <input type="text" id="add-pos" placeholder="例如：n.">
-      </div>
-      <div class="form-group">
-        <label>中文翻譯</label>
-        <input type="text" id="add-translation" placeholder="例如：意外的驚喜">
-      </div>
-      <div class="form-group">
-        <label>等級</label>
-        <select id="add-level">
-          <option value="J1">國一 (J1)</option>
-          <option value="J2">國二 (J2)</option>
-          <option value="J3">國三 (J3)</option>
-          <option value="H1">高一 (H1)</option>
-          <option value="H2">高二 (H2)</option>
-          <option value="H3">高三 (H3)</option>
-          <option value="ADV">進階 (ADV)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>例句（英文）</label>
-        <input type="text" id="add-example-en" placeholder="例如：Finding this book was pure serendipity.">
-      </div>
-      <div class="form-group">
-        <label>例句（中文）</label>
-        <input type="text" id="add-example-zh" placeholder="例如：找到這本書純屬意外的驚喜。">
-      </div>
-
-      <button class="action-btn" onclick="saveNewWord()">💾 儲存單字</button>
-      <div id="add-message" class="message-box hidden"></div>
-    </div>
-  </div>
-
-  <!-- 刪除單字畫面 -->
-  <div id="delete-screen" class="screen hidden">
-    <button class="back-btn" onclick="showScreen('home-screen')">← 返回</button>
-    <h2 class="screen-title">刪除單字</h2>
-
-    <div class="delete-container">
-      <div class="search-box">
-        <input type="text" id="delete-search" placeholder="搜尋單字..." oninput="filterDeleteList()">
-      </div>
-      <ul id="delete-list" class="word-list">
-        <!-- 動態生成的單字列表 -->
-      </ul>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast">訊息提示</div>
-
-  <!-- 資料模組 -->
-  <script src="data/wordsData.js"></script>
-  <script src="data/verb3Data.js"></script>
-
-  <!-- 核心模組 -->
-  <script src="core/config.js"></script>
-  <script src="core/state.js"></script>
-
-  <!-- 服務層 -->
-  <script src="services/storage.js"></script>
-  <script src="services/audio.js"></script>
-  <script src="services/wordService.js"></script>
-
-  <!-- UI 層 -->
-  <script src="ui/dom.js"></script>
-  <script src="ui/screens.js"></script>
-  <script src="ui/events.js"></script>
-
-  <!-- 主程式入口 -->
-  <script src="main.js"></script>
-
+  <script type="module" src="main.js?v=20251214_29"></script>
 </body>
 
 </html>

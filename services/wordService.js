@@ -3,25 +3,55 @@
  * 處理單字資料的過濾、搜尋、統計等邏輯
  */
 
-const WordService = {
+import { AppState } from '../core/state.js';
+import { wordsData } from '../data/wordsData.js';
+import { StorageService } from './storage.js';
+
+export const WordService = {
+    /**
+     * Standardize word data structure
+     * @param {Object} raw - Raw data from different sources
+     */
+    normalizeWord(raw) {
+        return {
+            english: raw.English || raw.english || raw.word || '（無英文）',
+            translation: raw.Translation || raw.translation || raw.zh || raw.chineseFront || '（無中文翻譯）',
+            level: raw.Level || raw.level || '',
+            pos: raw.POS || raw.pos || '（無詞性）',
+            phonetic: raw.Phonetic || raw.phonetic || '',
+            exampleEn: raw.example_en || raw.exampleEn || '',
+            exampleZh: raw.example_zh || raw.exampleZh || '',
+            verb: raw.verb || null,
+            synonyms: Array.isArray(raw.synonyms) ? raw.synonyms : [],
+            family: raw.family_key || raw.family || '',
+            schoolLevel: raw.schoolLevel || '',
+            pattern: raw.pattern || '',
+            patternZh: raw.patternZh || ''
+        };
+    },
+
+    getAllWords() {
+        return [...wordsData, ...AppState.getUserWords()].map(w => this.normalizeWord(w));
+    },
+
     /**
      * 根據等級更新活動單字列表
      * @param {Array} levels - 等級陣列
      */
     updateActiveWordList(levels) {
         // 合併內建單字和使用者單字
-        const allWords = [...fullWordList, ...AppState.getUserWords()];
+        const allWords = [...wordsData, ...AppState.getUserWords()];
 
         // 過濾掉被封鎖的單字
         const blockedWords = AppState.getBlockedWords();
         const filteredWords = allWords.filter(word =>
-            !blockedWords.includes(word.english)
+            !blockedWords.includes(word.English || word.english) // Check both cases as strict validation happens later
         );
 
-        // 根據等級篩選
-        const activeWords = filteredWords.filter(word =>
-            levels.includes(word.level)
-        );
+        // 根據等級篩選 & 正規化
+        const activeWords = filteredWords
+            .filter(word => levels.includes(word.level))
+            .map(word => this.normalizeWord(word)); // Apply normalization here
 
         AppState.setActiveWordList(activeWords);
         console.log(`Filtered ${activeWords.length} words for levels: ${levels.join(', ')}`);
@@ -34,14 +64,14 @@ const WordService = {
      * @returns {Object} 各等級的單字數量
      */
     getWordCounts() {
-        // 檢查 fullWordList 是否存在
-        if (typeof fullWordList === 'undefined' || !Array.isArray(fullWordList)) {
-            console.warn('fullWordList not available, skipping word count update');
+        // 檢查 wordsData 是否存在
+        if (typeof wordsData === 'undefined' || !Array.isArray(wordsData)) {
+            console.warn('wordsData not available, skipping word count update');
             return null;
         }
 
         // 計算各等級的單字數量
-        const allWords = [...fullWordList, ...AppState.getUserWords()];
+        const allWords = [...wordsData, ...AppState.getUserWords()];
         const counts = {
             J1: 0, J2: 0, J3: 0,
             H1: 0, H2: 0, H3: 0,
@@ -112,16 +142,24 @@ const WordService = {
      * @returns {Object} { validWords, invalidWords }
      */
     searchWords(wordList) {
-        const allWords = [...fullWordList, ...AppState.getUserWords()];
         const validWords = [];
         const invalidWords = [];
 
-        wordList.forEach(word => {
-            const found = allWords.find(w => w.english.toLowerCase() === word.toLowerCase());
-            if (found) {
-                validWords.push(found);
+        // 建立快速查詢 Map (lowercase)
+        // Ensure map creation handles inconsistent keys if needed, but assuming English is key
+        const wordMap = new Map();
+        [...wordsData, ...AppState.getUserWords()].forEach(w => {
+            const key = (w.English || w.english || '').toLowerCase();
+            if (key) wordMap.set(key, w);
+        });
+
+        wordList.forEach(inputWord => {
+            const lowerInput = inputWord.toLowerCase();
+            if (wordMap.has(lowerInput)) {
+                // Found: Normalize it immediately
+                validWords.push(this.normalizeWord(wordMap.get(lowerInput)));
             } else {
-                invalidWords.push(word);
+                invalidWords.push(inputWord);
             }
         });
 

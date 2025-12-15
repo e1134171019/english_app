@@ -3,7 +3,7 @@
  * 集中管理所有應用程式狀態
  */
 
-const AppState = {
+export const AppState = {
     // 單字資料
     userWords: [],
     blockedWords: [],

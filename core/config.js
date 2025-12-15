@@ -2,7 +2,7 @@
  * 應用程式設定常數
  */
 
-const AppConfig = {
+export const AppConfig = {
     // 等級定義
     LEVELS: {
         J1: 'J1',

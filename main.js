@@ -1,339 +1,286 @@
 /**
- * 個人英文練習網站 - 主程式入口 (重構版)
- * 模組化架構 - 整合所有模組
+ * English Practice App - Main Controller (Router)
+ * Modular Architecture:
+ * - Specific logic is delegated to modules/ (Flashcard, Quiz, Verb3, Custom).
+ * - Main.js handles Routing, Navigation, Global State, and Level Selection (Entry Point).
  */
+import { AppState } from './core/state.js';
+import { WordService } from './services/wordService.js';
+import { StorageService } from './services/storage.js';
+import { AudioService } from './services/audio.js';
 
-console.log('=== main.js (refactored) is loading ===');
+// Feature Modules
+import { FlashcardController } from './modules/FlashcardController.js';
+import { QuizController } from './modules/QuizController.js';
+import { Verb3Controller } from './modules/Verb3Controller.js';
+import { CustomController } from './modules/CustomController.js';
 
-// ===== 應用程式初始化 =====
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('App initializing...');
+const App = {
+  currentModule: null,
 
-  // 1. 初始化資料層
-  const dataLoaded = StorageService.init();
-  if (!dataLoaded) {
-    console.error('Failed to initialize data');
-    return;
-  }
+  async init() {
+    console.log('App Initializing (Modular)...');
 
-  // 2. 初始化 UI 層
-  DOMManager.init();
-  TooltipManager.init();
+    // 1. Initialize Services
+    const success = StorageService.init();
+    if (!success) return;
 
-  // 3. 更新單字數量顯示
-  const counts = WordService.getWordCounts();
-  DOMManager.updateWordCounts(counts);
+    // 2. Initial Setup
+    this.updateStats();
+    this.setupNavigation();
+    this.setupLevelSelect();
 
-  // 4. 初始化事件監聽器
-  EventManager.init();
+    // Modules Init
+    FlashcardController.init();
+    QuizController.init();
+    Verb3Controller.init();
+    CustomController.init();
 
-  // 5. 顯示首頁
-  ScreenManager.showScreen('home-screen');
+    // 3. Initial Screen
+    this.navigate('home-screen');
+  },
 
-  console.log('✓ App initialized successfully');
-});
+  updateStats() {
+    // Keep lightweight stats logic here or move to a DashboardModule.
+    // For now, logging counts is fine.
+    // const counts = WordService.getWordCounts();
+  },
 
-// ===== 全域函式 (供 HTML onclick 使用) =====
+  /* --- Router Logic --- */
 
-// 畫面導航
-function showScreen(screenId) {
-  ScreenManager.showScreen(screenId);
-}
+  navigate(screenId, params = {}) {
+    console.log(`Router: Navigating to ${screenId}`, params);
 
-function showLevelSelection(mode) {
-  ScreenManager.showLevelSelection(mode);
-}
+    // 1. Module Transition (Exit Old)
+    if (this.currentModule && typeof this.currentModule.onExit === 'function') {
+      this.currentModule.onExit();
+    }
+    this.currentModule = null;
 
-function backToTier1() {
-  ScreenManager.backToTier1();
-}
-
-// 卡片操作
-function flipCard() {
-  document.getElementById('flashcard').classList.toggle('is-flipped');
-}
-
-function prevCard() {
-  if (AppState.currentIndex > 0) {
-    AudioService.cancelSpeech();
-    AppState.setCurrentIndex(AppState.currentIndex - 1);
-    ScreenManager.renderCard();
-  }
-}
-
-function nextCard() {
-  const activeWordList = AppState.getActiveWordList();
-  if (AppState.currentIndex < activeWordList.length - 1) {
-    AudioService.cancelSpeech();
-    AppState.setCurrentIndex(AppState.currentIndex + 1);
-    ScreenManager.renderCard();
-  }
-}
-
-// 音訊控制
-function speakText(text, rateMultiplier = 1.0) {
-  AudioService.speakText(text, rateMultiplier);
-}
-
-function updateSpeed(val) {
-  AudioService.setSpeed(val);
-}
-
-function autoPlayCurrent() {
-  const currentCard = AppState.getCurrentCard();
-  AudioService.autoPlayCard(currentCard);
-}
-
-// 測驗相關
-function playQuizAudio() {
-  ScreenManager.playQuizAudio();
-}
-
-function submitQuizAnswer() {
-  const userAnswer = document.getElementById('quiz-input').value.trim().toLowerCase();
-  const correctAnswer = AppState.quizCurrentWord.english.toLowerCase();
-
-  const resultEl = document.getElementById('quiz-result');
-  const statusEl = document.getElementById('quiz-result-status');
-  const answerEl = document.getElementById('quiz-correct-answer');
-
-  if (userAnswer === correctAnswer) {
-    statusEl.textContent = '✅ 正確！';
-    statusEl.style.color = '#10B981';
-  } else {
-    statusEl.textContent = '❌ 錯誤';
-    statusEl.style.color = '#EF4444';
-  }
-
-  answerEl.textContent = `${AppState.quizCurrentWord.english} (${AppState.quizCurrentWord.translation})`;
-  resultEl.classList.remove('hidden');
-
-  document.getElementById('quiz-next-btn').disabled = false;
-}
-
-function nextQuizQuestion() {
-  AppState.quizIndex++;
-  ScreenManager.loadQuizQuestion();
-}
-
-// 動詞三態
-function switchTab(tabName) {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-
-  document.querySelectorAll('.tab-pane').forEach(pane => {
-    pane.classList.add('hidden');
-    pane.classList.remove('active');
-  });
-
-  const targetPane = document.getElementById(`tab-${tabName}`);
-  if (targetPane) {
-    targetPane.classList.remove('hidden');
-    targetPane.classList.add('active');
-  }
-
-  if (tabName === 'verb3') {
-    loadVerb3Data();
-  }
-}
-
-function selectVerbLevel(level) {
-  AppState.verb3CurrentLevel = level;
-
-  document.querySelectorAll('.verb-level-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-
-  loadVerb3Data();
-}
-
-function loadVerb3Data() {
-  if (typeof verb3List === 'undefined' || !Array.isArray(window.verb3List)) {
-    console.warn('verb3Data.js not loaded');
-    return;
-  }
-
-  const allVerbs = window.verb3List;
-
-  if (AppState.verb3CurrentLevel === 'JH') {
-    AppState.verb3List = allVerbs.filter(v => ['J1', 'J2', 'J3'].includes(v.level));
-  } else {
-    AppState.verb3List = allVerbs.filter(v => ['H1', 'H2', 'H3'].includes(v.level));
-  }
-
-  AppState.verb3List = AppState.verb3List.sort(() => Math.random() - 0.5);
-  AppState.verb3Index = 0;
-
-  loadVerb3Question();
-}
-
-function loadVerb3Question() {
-  if (AppState.verb3Index >= AppState.verb3List.length) {
-    AppState.verb3Index = 0;
-  }
-
-  AppState.verb3CurrentVerb = AppState.verb3List[AppState.verb3Index];
-
-  document.getElementById('verb3-base').textContent = AppState.verb3CurrentVerb.base;
-  document.getElementById('verb3-translation').textContent = `(${AppState.verb3CurrentVerb.translation})`;
-
-  document.getElementById('verb3-past-input').value = '';
-  document.getElementById('verb3-pp-input').value = '';
-
-  document.getElementById('verb3-result').classList.add('hidden');
-  document.getElementById('verb3-next').disabled = true;
-}
-
-function submitVerb3Answer() {
-  const userPast = document.getElementById('verb3-past-input').value.trim().toLowerCase();
-  const userPP = document.getElementById('verb3-pp-input').value.trim().toLowerCase();
-
-  const correctPast = AppState.verb3CurrentVerb.past.toLowerCase();
-  const correctPP = AppState.verb3CurrentVerb.ppart.toLowerCase();
-
-  const resultEl = document.getElementById('verb3-result');
-
-  let message = '';
-
-  if (userPast === correctPast && userPP === correctPP) {
-    message = '✅ 完全正確！';
-    resultEl.style.color = '#10B981';
-  } else {
-    message = `❌ 答案：<br>過去式：${AppState.verb3CurrentVerb.past}<br>過去分詞：${AppState.verb3CurrentVerb.ppart}`;
-    resultEl.style.color = '#EF4444';
-  }
-
-  resultEl.innerHTML = message;
-  resultEl.classList.remove('hidden');
-  document.getElementById('verb3-next').disabled = false;
-}
-
-function nextVerb3Question() {
-  AppState.verb3Index++;
-  loadVerb3Question();
-}
-
-// 自訂訓練
-function searchCustomWords() {
-  const input = document.getElementById('custom-words-input').value;
-
-  const words = input
-    .split(/[\n,\s]+/)
-    .map(w => w.trim().toLowerCase())
-    .filter(w => w.length > 0);
-
-  if (words.length === 0) {
-    alert('請輸入單字！');
-    return;
-  }
-
-  if (words.length > AppConfig.MAX_CUSTOM_WORDS) {
-    alert(`最多只能輸入 ${AppConfig.MAX_CUSTOM_WORDS} 個單字！`);
-    return;
-  }
-
-  const { validWords, invalidWords } = WordService.searchWords(words);
-
-  document.getElementById('custom-valid-count').textContent = validWords.length;
-  document.getElementById('custom-invalid-list').textContent =
-    invalidWords.length > 0 ? invalidWords.join(', ') : '無';
-
-  document.getElementById('custom-results').classList.remove('hidden');
-
-  AppState.customWordList = validWords;
-}
-
-function startCustomPractice() {
-  if (AppState.customWordList.length === 0) {
-    alert('沒有有效的單字！');
-    return;
-  }
-
-  AppState.setActiveWordList(AppState.customWordList);
-  AppState.setCurrentIndex(0);
-  ScreenManager.showScreen('practice-screen');
-  ScreenManager.renderCard();
-}
-
-function startCustomQuiz() {
-  if (AppState.customWordList.length === 0) {
-    alert('沒有有效的單字！');
-    return;
-  }
-
-  AppState.quizList = [...AppState.customWordList].sort(() => Math.random() - 0.5);
-  AppState.quizIndex = 0;
-  ScreenManager.showScreen('quiz-screen');
-  ScreenManager.loadQuizQuestion();
-}
-
-// 新增/刪除單字
-function saveNewWord() {
-  const english = document.getElementById('add-english').value.trim();
-  const pos = document.getElementById('add-pos').value.trim();
-  const translation = document.getElementById('add-translation').value.trim();
-  const level = document.getElementById('add-level').value;
-  const exampleEn = document.getElementById('add-example-en').value.trim();
-  const exampleZh = document.getElementById('add-example-zh').value.trim();
-
-  try {
-    const newWord = WordService.addUserWord({
-      english, pos, translation, level, exampleEn, exampleZh
+    // 2. Hide All Screens (Nuclear Option)
+    document.querySelectorAll('.screen').forEach(el => {
+      el.classList.remove('active');
+      el.style.display = 'none'; // Force hide inline styles
     });
 
-    // 更新單字數量
-    const counts = WordService.getWordCounts();
-    DOMManager.updateWordCounts(counts);
+    // 3. Resolve Target Module & Mode
+    let newModule = null;
+    if (screenId === 'practice-screen') {
+      // Check Mode to decide between Custom or Flashcard? 
+      // FlashcardController handles both if we just passed list.
+      // AppState.activeWordList is source of truth.
+      newModule = FlashcardController;
+      AppState.currentMode = 'practice';
+    }
+    else if (screenId === 'quiz-screen') {
+      newModule = QuizController;
+      AppState.currentMode = 'quiz';
+    }
+    else if (screenId === 'verb3-screen') {
+      newModule = Verb3Controller;
+      AppState.currentMode = 'verb3';
+    }
+    else if (screenId === 'custom-training-screen') {
+      newModule = CustomController;
+      // Mode?
+    }
+    else if (screenId === 'level-select-screen') {
+      if (params.mode) AppState.currentMode = params.mode;
+    }
 
-    // 清空表單
-    document.getElementById('add-english').value = '';
-    document.getElementById('add-pos').value = '';
-    document.getElementById('add-translation').value = '';
-    document.getElementById('add-example-en').value = '';
-    document.getElementById('add-example-zh').value = '';
+    // 4. Show Target Screen
+    const target = document.getElementById(screenId);
+    if (target) {
+      target.style.display = '';
+      target.classList.add('active');
+    } else {
+      console.error(`Screen not found: ${screenId}`);
+      return;
+    }
 
-    const messageEl = document.getElementById('add-message');
-    messageEl.textContent = `✅ 成功新增單字「${english}」！`;
-    messageEl.classList.remove('hidden');
-    messageEl.style.color = '#10B981';
+    // 5. Module Transition (Enter New)
+    if (newModule) {
+      this.currentModule = newModule;
+      if (typeof newModule.onEnter === 'function') {
+        newModule.onEnter(params);
+      }
+    }
 
-    setTimeout(() => {
-      messageEl.classList.add('hidden');
-    }, 3000);
-  } catch (error) {
-    alert(error.message);
-  }
-}
+    // 6. UI Header & Nav
+    this.updateHeader(screenId);
+    this.updateBottomNav(screenId);
 
-function filterDeleteList() {
-  EventManager.filterDeleteList();
-}
+    // Reset Floating Back Button
+    const fab = document.getElementById('floating-back-btn');
+    if (fab) fab.classList.add('hidden');
+  },
 
-function deleteUserWord(english) {
-  if (!confirm(`確定要刪除單字「${english}」嗎？`)) {
-    return;
-  }
+  goBack() {
+    AudioService.cancelSpeech();
 
-  WordService.deleteUserWord(english);
+    // If in a Module, maybe let module handle back? 
+    // Or standard hierarchy.
+    const currentScreen = document.querySelector('.screen.active')?.id;
 
-  // 更新單字數量
-  const counts = WordService.getWordCounts();
-  DOMManager.updateWordCounts(counts);
+    if (currentScreen === 'practice-screen' || currentScreen === 'quiz-screen') {
+      this.navigate('level-select-screen');
+    } else {
+      // Level Select, Verb3, Custom -> Home
+      this.navigate('home-screen');
+    }
+  },
 
-  // 重新渲染列表
-  EventManager.renderDeleteList();
+  /* --- Shared UI Logic (Lobby) --- */
 
-  DOMManager.showToast(`✅ 已刪除「${english}」`);
-}
+  setupNavigation() {
+    const backBtn = document.getElementById('nav-back-btn');
+    if (backBtn) backBtn.addEventListener('click', () => this.goBack());
+    window.app = this;
 
-// ===== Speech Synthesis 初始化 =====
-if (window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-  };
-}
+    // Delegate Flip Card Click (Global Listener)
+    const card = document.getElementById('flashcard');
+    if (card) {
+      card.addEventListener('click', (e) => {
+        if (this.currentModule === FlashcardController) {
+          if (e.target.closest('button') || e.target.closest('.token')) return;
+          this.flipCard();
+        }
+      });
+    }
+  },
 
-console.log('✓ Main.js (refactored) loaded successfully');
+  updateHeader(screenId) {
+    const titleEl = document.getElementById('app-title');
+    const backBtn = document.getElementById('nav-back-btn');
+    if (!titleEl) return;
+
+    if (screenId === 'home-screen') {
+      titleEl.textContent = '英文練習';
+      backBtn?.classList.add('hidden');
+    } else {
+      backBtn?.classList.remove('hidden');
+      const map = {
+        'level-select-screen': AppState.currentMode === 'quiz' ? '聽力練習 - 選單' : '單字練習 - 選單',
+        'practice-screen': '單字練習', // Can be dynamic
+        'quiz-screen': '聽力練習',
+        'verb3-screen': '動詞三態',
+        'custom-training-screen': '我的專屬',
+        'add-screen': '新增單字',
+        'delete-screen': '管理單字'
+      };
+      titleEl.textContent = map[screenId] || '英文練習';
+    }
+  },
+
+  updateBottomNav(screenId) {
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
+      btn.classList.remove('active');
+      const label = btn.querySelector('.nav-label')?.textContent;
+      // Simple mapping
+      if (screenId === 'home-screen' && label === '首頁') btn.classList.add('active');
+      if ((screenId.includes('practice') || (screenId === 'level-select-screen' && AppState.currentMode === 'practice')) && label === '單字') btn.classList.add('active');
+      if ((screenId.includes('quiz') || (screenId === 'level-select-screen' && AppState.currentMode === 'quiz')) && label === '聽力練習') btn.classList.add('active');
+      if (screenId.includes('verb3') && label === '三態') btn.classList.add('active');
+      if (screenId.includes('custom') && label === '我的專屬') btn.classList.add('active');
+    });
+
+    // Floating Button Logic
+    const fab = document.getElementById('floating-back-btn');
+    if (fab) {
+      if (screenId === 'home-screen') fab.classList.add('hidden');
+      else fab.classList.remove('hidden');
+    }
+  },
+
+  /* --- Level Selection (Lobby) --- */
+
+  setupLevelSelect() {
+    // Tier 1 Chips
+    document.querySelectorAll('#tier1-chips .chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        document.querySelectorAll('#tier1-chips .chip').forEach(c => c.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+
+        let val = 'JH';
+        const txt = e.currentTarget.textContent;
+        if (txt.includes('高中')) val = 'SH';
+        else if (txt.includes('進階')) val = 'ADV';
+
+        AppState.currentTier = val;
+        this.renderTier2(val);
+      });
+    });
+  },
+
+  renderTier2(tier1) {
+    const container = document.getElementById('tier2-chips');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let options = (tier1 === 'JH') ? ['J1', 'J2', 'J3', 'ALL_JH'] : (tier1 === 'SH') ? ['H1', 'H2', 'H3', 'ALL_SH'] : ['ADV'];
+    const map = { 'J1': '國一', 'J2': '國二', 'J3': '國三', 'ALL_JH': '全部國中', 'H1': '高一', 'H2': '高二', 'H3': '高三', 'ALL_SH': '全部高中', 'ADV': '進階' };
+
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = map[opt] || opt;
+      btn.onclick = () => {
+        document.querySelectorAll('#tier2-chips .chip').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Set Temp
+        if (opt.startsWith('ALL')) AppState.tempLevels = (opt === 'ALL_JH' ? ['J1', 'J2', 'J3'] : ['H1', 'H2', 'H3']);
+        else AppState.tempLevels = [opt === 'ADV' ? 'H3' : opt];
+      };
+      container.appendChild(btn);
+    });
+  },
+
+  confirmLevelSelection() {
+    if (!AppState.tempLevels || AppState.tempLevels.length === 0) {
+      alert('請先選擇等級！');
+      return;
+    }
+    WordService.updateActiveWordList(AppState.tempLevels);
+
+    // Route based on Mode
+    if (AppState.currentMode === 'quiz') this.navigate('quiz-screen');
+    else if (AppState.currentMode === 'verb3') this.navigate('verb3-screen');
+    else this.navigate('practice-screen'); // Default
+  },
+
+  /* --- Adapter / Delegate Methods (Called by HTML) --- */
+
+  // Flashcard Delegates
+  flipCard() { this.currentModule?.flipCard?.(); },
+  nextCard() { this.currentModule?.nextCard?.(); },
+  prevCard() { this.currentModule?.prevCard?.(); },
+  toggleAutoPlay() { this.currentModule?.toggleAutoPlay?.(); },
+  speakCurrentWord() { this.currentModule?.speakCurrentWord?.(); },
+  speakExample() { this.currentModule?.speakExample?.(); },
+
+  // Quiz Delegates
+  startQuizMode() { /* Legacy call, handled by navigate */ },
+  checkQuiz(skip) { this.currentModule?.checkAnswer?.(skip); },
+  speakQuizWord() { this.currentModule?.speakWord?.(); },
+  nextQuizQuestion() { this.currentModule?.nextQuestion?.(); },
+  prevQuizQuestion() { this.currentModule?.prevQuestion?.(); },
+
+  // Verb3 Delegates
+  switchVerb3Level(lvl) { this.currentModule?.switchLevel?.(lvl); },
+  checkVerb3() { this.currentModule?.checkAnswer?.(); },
+  prevVerb3Question() { this.currentModule?.prevQuestion?.(); },
+  nextVerb3Question() { this.currentModule?.nextQuestion?.(); },
+  loadVerb3Question() { this.currentModule?.loadQuestion?.(); },
+
+  // Custom Delegates
+  processCustomWords() { this.currentModule?.processInput?.(); },
+  playCustomSet(id) { this.currentModule?.playSet?.(id); },
+  deleteCustomSet(id) { this.currentModule?.deleteSet?.(id); },
+  renderCustomSets() { /* Called by onEnter */ }
+};
+
+// Start
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});

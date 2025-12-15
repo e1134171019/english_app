@@ -4,7 +4,7 @@
  * 包含國中和高中常用不規則動詞
  */
 
-window.verb3List = [
+export const verb3List = [
     // ==========================================
     // 國中動詞三態 (J1-J3)
     // ==========================================
@@ -136,8 +136,3 @@ window.verb3List = [
     { base: 'wind', past: 'wound', ppart: 'wound', level: 'H3', translation: '纏繞' },
     { base: 'withdraw', past: 'withdrew', ppart: 'withdrawn', level: 'H3', translation: '撤退' }
 ];
-
-// 如果在 Node.js 環境中執行
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { verb3List: window.verb3List };
-}

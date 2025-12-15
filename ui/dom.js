@@ -3,7 +3,7 @@
  * 集中管理 DOM 元素的更新和顯示
  */
 
-const DOMManager = {
+export const DOMManager = {
     // DOM 元素快取
     elements: {},
 
@@ -14,21 +14,21 @@ const DOMManager = {
         this.elements = {
             // 卡片相關
             flashcard: document.getElementById('flashcard'),
-            cardChinese: document.getElementById('card-chinese'),
-            cardEnglish: document.getElementById('card-english'),
+            cardZh: document.getElementById('card-front-text'),       // Corrected ID
+            cardEn: document.getElementById('card-back-text'),       // Corrected ID
             cardPos: document.getElementById('card-pos'),
             cardPhonetic: document.getElementById('card-phonetic'),
-            cardMeaning: document.getElementById('card-meaning'),
-            backCollocations: document.getElementById('back-collocations'),
-            cardSentenceBox: document.getElementById('card-sentence-box'),
-            cardExampleEn: document.getElementById('card-example-en'),
-            cardExampleZh: document.getElementById('card-example-zh'),
-            pageIndicator: document.getElementById('page-indicator'),
-            prevBtn: document.getElementById('prevBtn'),
-            nextBtn: document.getElementById('nextBtn'),
 
-            // Toast
-            toast: document.getElementById('toast')
+            // Sentence Section
+            cardExampleEn: document.getElementById('card-sentence-en'), // Corrected ID
+            cardExampleZh: document.getElementById('card-sentence-zh'), // Corrected ID
+
+            // Navigation
+            practiceCounter: document.getElementById('practice-counter'), // New
+            practiceProgress: document.getElementById('practice-progress'), // New
+
+            // Toast / Tooltip
+            toast: document.getElementById('toast') // Note: toast ID not found in new_index.html, might need fallback or check
         };
 
         console.log('✓ DOMManager initialized');
@@ -41,62 +41,91 @@ const DOMManager = {
      * @param {number} totalCount - 總數量
      */
     updateCard(card, currentIndex, totalCount) {
-        const { flashcard, cardChinese, cardEnglish, cardPos, cardPhonetic,
-            cardMeaning, cardSentenceBox, cardExampleEn, cardExampleZh } = this.elements;
+        const { flashcard, cardZh, cardEn, cardPos, cardPhonetic,
+            cardExampleEn, cardExampleZh, practiceCounter, practiceProgress } = this.elements;
 
         // 移除翻面狀態
-        flashcard.classList.remove('is-flipped');
+        if (flashcard) {
+            flashcard.classList.remove('flipped'); // Corrected class
+            // Reset transition hack if needed, or rely on CSS
+        }
 
         setTimeout(() => {
             // 更新卡片內容
-            cardChinese.textContent = card.translation || '(未命名)';
-            cardEnglish.textContent = card.english;
-            cardPos.textContent = card.pos || '';
-            cardPhonetic.textContent = '';
-
-            // 解釋
-            cardMeaning.textContent = card.translation || '';
-
-            // 搭配詞（暫時清空）
-            this.elements.backCollocations.innerHTML = '';
+            if (cardZh) cardZh.textContent = card.translation || '(未命名)';
+            if (cardEn) cardEn.textContent = card.english;
+            if (cardPos) cardPos.textContent = card.pos || '';
+            if (cardPhonetic) cardPhonetic.textContent = card.phonetic || '/.../';
 
             // 例句
-            if (card.example_en) {
-                cardExampleEn.innerHTML = this.createInteractiveSentence(card.example_en);
-                cardExampleZh.textContent = card.example_zh || '';
-                cardSentenceBox.style.display = 'block';
+            if (card.exampleEn) { // Corrected prop name from wordService (exampleEn)
+                // Use createInteractiveSentence to inject spans
+                if (cardExampleEn) cardExampleEn.innerHTML = this.createInteractiveSentence(card.exampleEn, card.english);
+                if (cardExampleZh) cardExampleZh.textContent = card.exampleZh || '';
             } else {
-                cardSentenceBox.style.display = 'none';
+                if (cardExampleEn) cardExampleEn.innerHTML = '';
+                if (cardExampleZh) cardExampleZh.textContent = '';
             }
 
-            // 更新頁碼和按鈕
-            this.updatePageIndicator(currentIndex, totalCount);
+            // 更新頁碼 (Progress Bar & Counter)
+            if (practiceCounter) practiceCounter.textContent = `${currentIndex + 1} / ${totalCount}`;
+            if (practiceProgress) {
+                const pct = ((currentIndex + 1) / totalCount) * 100;
+                practiceProgress.style.width = `${pct}%`;
+            }
+
         }, 150);
     },
 
-    /**
-     * 更新頁碼指示器
-     */
     updatePageIndicator(current, total) {
-        this.elements.pageIndicator.textContent = `${current + 1} / ${total}`;
-        this.elements.prevBtn.disabled = current === 0;
-        this.elements.nextBtn.disabled = current === total - 1;
+        // Deprecated in favor of direct update in updateCard
     },
 
     /**
      * 建立互動式例句（單字可點擊）
      */
-    createInteractiveSentence(sentence) {
+    createInteractiveSentence(sentence, targetWord) {
         if (!sentence) return '';
+        // Enhance: Highlight the target word strictly? Or just all words?
+        // Current logic splits all. Let's keep it.
+        const tokens = sentence.split(/(\s+|[.,!?;:“”"()])/);
 
-        const words = sentence.split(/(\s+|[.,!?;:])/);
-
-        return words.map(word => {
-            if (/^[a-zA-Z]+$/.test(word)) {
-                return `<span class="word-token" onmouseenter="showWordTooltip(event, '${word}')" onmouseleave="scheduleHideTooltip()">${word}</span>`;
+        return tokens.map(token => {
+            // If token is a word (alpha), wrap in span
+            if (/^[a-zA-Z\u00C0-\u00FF]+['’]?[a-zA-Z\u00C0-\u00FF]*$/.test(token)) {
+                const isTarget = targetWord && token.toLowerCase().includes(targetWord.toLowerCase());
+                const className = isTarget ? 'token target-word' : 'token'; // 'token' class from CSS
+                return `<span class="${className}" data-word="${token}">${token}</span>`;
             }
-            return word;
+            return token;
         }).join('');
+    },
+
+    /**
+     * 渲染自訂練習組列表
+     */
+    renderCustomSets(sets) {
+        const container = document.getElementById('my-custom-list');
+        if (!container) return;
+
+        if (!sets || sets.length === 0) {
+            container.innerHTML = '<div class="custom-set-item" style="padding:20px; text-align:center; color:var(--text-secondary);">暫無自訂練習組</div>';
+            return;
+        }
+
+        container.innerHTML = sets.map(set => `
+            <div class="custom-set-item" style="display:flex; justify-content:space-between; align-items:center; background:white; padding:15px; margin-bottom:12px; border-radius:12px; box-shadow:var(--shadow-sm);">
+                <div class="set-info" data-id="${set.id}" style="flex:1; cursor:pointer;">
+                    <div style="font-weight:bold; color:var(--text-main); font-size:1.1rem;">${set.name}</div>
+                    <div style="font-size:0.9rem; color:var(--text-secondary); margin-top:4px;">${set.words.length} 單字</div>
+                </div>
+                <div class="set-actions" style="display:flex; gap:8px;">
+                    <button class="icon-btn small custom-edit-btn" data-id="${set.id}" title="編輯名稱"><span class="material-icons" style="font-size:1.2rem;">edit</span></button>
+                    <button class="icon-btn small custom-delete-btn" data-id="${set.id}" title="刪除"><span class="material-icons" style="font-size:1.2rem;">delete</span></button>
+                    <button class="icon-btn small custom-play-btn" data-id="${set.id}" title="開始練習" style="background:#EEF2FF; color:var(--primary);"><span class="material-icons">play_arrow</span></button>
+                </div>
+            </div>
+        `).join('');
     },
 
     /**
@@ -105,20 +134,11 @@ const DOMManager = {
     updateWordCounts(counts) {
         if (!counts) return;
 
-        const updateCount = (id, count) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = `共 ${count} 字`;
-        };
-
-        updateCount('j1-count', counts.J1);
-        updateCount('j2-count', counts.J2);
-        updateCount('j3-count', counts.J3);
-        updateCount('h1-count', counts.H1);
-        updateCount('h2-count', counts.H2);
-        updateCount('h3-count', counts.H3);
-        updateCount('adv-count', counts.ADV);
-        updateCount('jh-count', counts.JH_TOTAL);
-        updateCount('sh-count', counts.SH_TOTAL);
+        // In Master HTML, we only have #total-words-count in Home Stats for now
+        // And maybe specific tier counts aren't visible in the new clean Level Select?
+        // Let's just update Total if it exists
+        const totalEl = document.getElementById('total-words-count');
+        if (totalEl) totalEl.textContent = counts.TOTAL_WORDS || (counts.JH_TOTAL + counts.SH_TOTAL + counts.ADV);
     },
 
     /**
@@ -136,19 +156,10 @@ const DOMManager = {
     }
 };
 
-// 全域函式（用於 HTML onclick）
-function showWordTooltip(event, word) {
-    TooltipManager.show(event, word);
-}
-
-function scheduleHideTooltip() {
-    TooltipManager.scheduleHide();
-}
-
 /**
  * Tooltip 管理器
  */
-const TooltipManager = {
+export const TooltipManager = {
     tooltipEl: null,
     hideTimer: null,
 
