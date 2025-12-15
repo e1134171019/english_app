@@ -84,20 +84,23 @@ export const DOMManager = {
     /**
      * 建立互動式例句（單字可點擊）
      */
+    /**
+     * 建立互動式例句（單字可點擊）
+     */
     createInteractiveSentence(sentence, targetWord) {
         if (!sentence) return '';
-        // Enhance: Highlight the target word strictly? Or just all words?
-        // Current logic splits all. Let's keep it.
+
+        // Improved Regex to split by delimiters but keep them in tokens array
         const tokens = sentence.split(/(\s+|[.,!?;:“”"()])/);
 
         return tokens.map(token => {
-            // If token is a word (alpha), wrap in span
+            // Check if it's a valid word (English letters)
             if (/^[a-zA-Z\u00C0-\u00FF]+['’]?[a-zA-Z\u00C0-\u00FF]*$/.test(token)) {
                 const isTarget = targetWord && token.toLowerCase().includes(targetWord.toLowerCase());
-                const className = isTarget ? 'token target-word' : 'token'; // 'token' class from CSS
+                const className = isTarget ? 'token target-word' : 'token';
                 return `<span class="${className}" data-word="${token}">${token}</span>`;
             }
-            return token;
+            return token; // Return punctuation/whitespace as is
         }).join('');
     },
 
@@ -167,23 +170,26 @@ export const TooltipManager = {
         this.tooltipEl = document.getElementById('translation-tooltip');
     },
 
-    show(event, word) {
+    show(event, htmlContent) {
         clearTimeout(this.hideTimer);
 
         if (!this.tooltipEl) {
             this.tooltipEl = document.getElementById('translation-tooltip');
         }
 
-        const translation = `${word} (點擊查看翻譯)`;
+        if (this.tooltipEl) {
+            this.tooltipEl.innerHTML = htmlContent;
+            this.tooltipEl.classList.remove('hidden');
+            this.tooltipEl.classList.add('visible');
 
-        this.tooltipEl.innerHTML = `<strong>${word}</strong><br>${translation}`;
-        this.tooltipEl.classList.remove('hidden');
-        this.tooltipEl.classList.add('visible');
+            // Position calculation can be improved (e.g., prevent overflow)
+            const rect = event.target.getBoundingClientRect();
+            this.tooltipEl.style.position = 'fixed';
+            this.tooltipEl.style.top = `${rect.bottom + 5}px`;
 
-        const rect = event.target.getBoundingClientRect();
-        this.tooltipEl.style.position = 'fixed';
-        this.tooltipEl.style.top = `${rect.bottom + 5}px`;
-        this.tooltipEl.style.left = `${rect.left}px`;
+            // Basic centering relative to token, or simple left align
+            this.tooltipEl.style.left = `${rect.left}px`;
+        }
     },
 
     scheduleHide() {

@@ -14,6 +14,7 @@ import { FlashcardController } from './modules/FlashcardController.js';
 import { QuizController } from './modules/QuizController.js';
 import { Verb3Controller } from './modules/Verb3Controller.js';
 import { CustomController } from './modules/CustomController.js';
+import { EventManager } from './ui/events.js';
 
 const App = {
   currentModule: null,
@@ -35,6 +36,9 @@ const App = {
     QuizController.init();
     Verb3Controller.init();
     CustomController.init();
+
+    // Global Events
+    EventManager.init();
 
     // 3. Initial Screen
     this.navigate('home-screen');

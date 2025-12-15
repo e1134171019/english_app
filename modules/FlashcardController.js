@@ -1,6 +1,7 @@
 import { AppState } from '../core/state.js';
 import { AudioService } from '../services/audio.js';
 import { WordService } from '../services/wordService.js';
+import { DOMManager } from '../ui/dom.js';
 
 export const FlashcardController = {
     name: 'practice-screen',
@@ -64,15 +65,21 @@ export const FlashcardController = {
 
         // Back
         this.setText('card-back-text', word.english);
-        this.setText('card-pos', word.partOfSpeech || 'unknown');
+        this.setText('card-pos', word.pos || ''); // Fix POS mapping
         this.setText('card-phonetic', word.phonetic || '/.../');
 
         // Sentences
-        // Sentences
-        const enEx = word.exampleEn || word.example_en || 'No example.';
-        const zhEx = word.exampleZh || word.example_zh || '無例句。';
-        this.setText('card-sentence-en', enEx);
-        this.setText('card-sentence-zh', zhEx);
+        const enEx = word.exampleEn || word.example_en || '';
+        const zhEx = word.exampleZh || word.example_zh || '';
+
+        const enEl = document.getElementById('card-sentence-en');
+        if (enEl) {
+            enEl.innerHTML = enEx
+                ? DOMManager.createInteractiveSentence(enEx, word.english)
+                : 'No example.';
+        }
+
+        this.setText('card-sentence-zh', zhEx || '無例句。');
 
         // Related Info
         const infoEl = document.getElementById('card-related-info');

@@ -72,9 +72,13 @@ export const EventManager = {
                     AudioService.speakText(word);
 
                     // Show Tooltip
-                    TooltipManager.show(e, translation ? `${word}: ${translation}` : `${word} (查無翻譯)`);
+                    const content = translation
+                        ? `<strong>${word}</strong><br>${translation}`
+                        : `<strong>${word}</strong><br>(查無翻譯)`;
+                    TooltipManager.show(e, content);
                 } else {
                     // Speak full sentence if not clicking a token
+                    e.stopPropagation(); // Prevent card flip
                     const text = sentenceBoxEn.textContent;
                     AudioService.speakText(text);
                 }
@@ -137,14 +141,15 @@ export const EventManager = {
         }, true); // Use capture or rely on bubbling? mouseenter doesn't bubble. use mouseover.
 
         document.body.addEventListener('mouseover', (e) => {
-            if (e.target.classList.contains('word-token')) {
+            if (e.target.classList.contains('token')) {
                 const word = e.target.dataset.word;
-                TooltipManager.show(e, word);
+                const content = `<strong>${word}</strong><br>(點擊查看翻譯)`;
+                TooltipManager.show(e, content);
             }
         });
 
         document.body.addEventListener('mouseout', (e) => {
-            if (e.target.classList.contains('word-token')) {
+            if (e.target.classList.contains('token')) {
                 TooltipManager.scheduleHide();
             }
         });
