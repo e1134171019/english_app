@@ -28,6 +28,11 @@ export const AudioService = {
         window.speechSynthesis.speak(utterance);
     },
 
+    // Alias for backward compatibility
+    speak(text, rate) {
+        this.speakText(text, rate);
+    },
+
     /**
      * 取消當前朗讀
      */

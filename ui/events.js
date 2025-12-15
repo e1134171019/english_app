@@ -16,75 +16,34 @@ import { StorageService } from '../services/storage.js';
 export const EventManager = {
     /**
      * 初始化所有事件監聽器
+     * Note: Token clicks, Tier 1/2 chips, and flashcard flip are now handled by EventCoordinator in main.js
      */
     init() {
         this.initNavigation();
-        this.initTwoTierMenu();
-        this.initCardEvents();
-        this.initPracticeEvents(); // New logic
+        // this.initTwoTierMenu(); // REMOVED - handled by EventCoordinator
+        this.initCardEvents(); // Simplified - flashcard flip removed
+        // this.initPracticeEvents(); // REMOVED - handled by EventCoordinator
         this.initQuizEvents();
         this.initVerb3Events();
         this.initCustomTrainingEvents();
         this.initAddDeleteEvents();
         this.initModals();
-        this.initGlobalDelegation();
+        // this.initGlobalDelegation(); // REMOVED - Tooltip handled by EventCoordinator
 
-        console.log('✓ EventManager initialized');
+        console.log('✓ EventManager initialized (refactored)');
     },
 
-    /**
-     * 初始化練習模式事件 (Speed, Interactive click)
+    // REMOVED: initPracticeEvents()
+    // Token clicks and interactive sentences are now handled by EventCoordinator in main.js
+    // Speed slider moved to initCardEvents()
+
+    /* DELETED CODE (formerly Line 38-87):
+     * - Token click handler (replaced by EventCoordinator)
+     * - Sentence box click (replaced by EventCoordinator)
+     * - Tooltip display (now uses TooltipManager via EventCoordinator)
+     * All functionality moved to EventCoordinator in main.js Line 85-90
      */
-    initPracticeEvents() {
-        // Speed Slider
-        const rateSlider = document.getElementById('rate-slider');
-        if (rateSlider) {
-            rateSlider.addEventListener('input', (e) => {
-                const speed = parseFloat(e.target.value);
-                AudioService.setSpeed(speed);
-                // Update title to show value? Optional.
-            });
-        }
 
-        // Interactive Sentence (Delegate)
-        // Interactive Sentence (Delegate)
-        const sentenceBoxEn = document.getElementById('card-sentence-en'); // Corrected ID
-        if (sentenceBoxEn) {
-            sentenceBoxEn.addEventListener('click', (e) => {
-                // Check if clicked a specific word token
-                if (e.target.classList.contains('token')) {
-                    e.stopPropagation();
-                    const word = e.target.dataset.word; // dom.js uses data-word
-
-                    // Lookup Word
-                    const { validWords } = WordService.searchWords([word]);
-                    let translation = '';
-                    if (validWords.length > 0) {
-                        translation = validWords[0].translation;
-                    }
-                    // Fallback to active list if not found in dictionary (rare but possible)
-                    else if (AppState.activeWordList) {
-                        const found = AppState.activeWordList.find(w => w.english.toLowerCase() === word.toLowerCase());
-                        if (found) translation = found.translation;
-                    }
-
-                    // Speak word
-                    AudioService.speakText(word);
-
-                    // Show Tooltip
-                    const content = translation
-                        ? `<strong>${word}</strong><br>${translation}`
-                        : `<strong>${word}</strong><br>(查無翻譯)`;
-                    TooltipManager.show(e, content);
-                } else {
-                    // Speak full sentence if not clicking a token
-                    e.stopPropagation(); // Prevent card flip
-                    const text = sentenceBoxEn.textContent;
-                    AudioService.speakText(text);
-                }
-            });
-        }
-    },
 
     initModals() {
         // Legacy AI Modal logic removed. The app uses direct generation in future tasks.
@@ -109,51 +68,15 @@ export const EventManager = {
         });
     },
 
-    /**
-     * 全域事件委派（處理動態生成的元素或通用行為）
+    // REMOVED: initGlobalDelegation()
+    // Tooltip hover and most global delegation now handled by EventCoordinator
+
+    /* DELETED CODE (formerly Line 115-156):
+     * - Tooltip mouseover/mouseout (conflicted with click-based Tooltip)
+     * - Delete button handler (can be moved if needed)
+     * - Flip hint buttons (obsolete)
      */
-    initGlobalDelegation() {
-        document.body.addEventListener('click', (e) => {
-            // 刪除單字按鈕
-            if (e.target.classList.contains('delete-btn')) {
-                const english = e.target.dataset.word; // 需在 HTML 補上 data-word
-                // 如果 HTML onclick 還是 deleteUserWord('word')，需要改掉。
-                // 這裡假設會改用 data-word 或是從 onclick 屬性移出。
-                // 但為了相容現有結構，若 HTML 仍用 onclick，這裡不會觸發（除非移除 onclick）。
-                // 因為我們計畫移除 onclick，所以這裡必須處理。
-                // 注意：main.js 裡的 deleteUserWord logic 需要搬過來。
-                this.handleDeleteUserWord(english);
-            }
 
-            // 翻卡相關
-            if (e.target.classList.contains('flip-hint-btn') ||
-                e.target.classList.contains('flip-back-btn-large')) {
-                document.getElementById('flashcard').classList.toggle('is-flipped');
-            }
-        });
-
-        // Tooltip 懸停事件 (mouseover/mouseout)
-        document.body.addEventListener('mouseenter', (e) => {
-            if (e.target.classList.contains('word-token')) {
-                const word = e.target.dataset.word;
-                TooltipManager.show(e, word);
-            }
-        }, true); // Use capture or rely on bubbling? mouseenter doesn't bubble. use mouseover.
-
-        document.body.addEventListener('mouseover', (e) => {
-            if (e.target.classList.contains('token')) {
-                const word = e.target.dataset.word;
-                const content = `<strong>${word}</strong><br>(點擊查看翻譯)`;
-                TooltipManager.show(e, content);
-            }
-        });
-
-        document.body.addEventListener('mouseout', (e) => {
-            if (e.target.classList.contains('token')) {
-                TooltipManager.scheduleHide();
-            }
-        });
-    },
 
     /**
      * 初始化首頁導航事件
@@ -222,29 +145,15 @@ export const EventManager = {
         console.log('✓ Navigation initialized');
     },
 
-    /**
-     * 初始化兩層選單事件
-     */
-    /**
-     * 初始化兩層選單事件
-     */
-    initTwoTierMenu() {
-        // Tier 1 selection chips have onclick="selectTier1('JH')" in main.js logic?
-        // No, in screens.js we generate them dynamically?
-        // HTML has static chips: #tier1-chips > .chip[data-val="JH"]
+    // REMOVED: initTwoTierMenu()
+    // Tier 1 and Tier 2 chip clicks are now handled by EventCoordinator in main.js
 
-        document.querySelectorAll('#tier1-chips .chip').forEach(chip => {
-            chip.addEventListener('click', (e) => {
-                document.querySelectorAll('#tier1-chips .chip').forEach(c => c.classList.remove('active'));
-                e.target.classList.add('active');
-                const val = e.target.dataset.val;
-                // Call ScreenManager
-                ScreenManager.showTier2(val);
-            });
-        });
+    /* DELETED CODE (formerly Line 228-247):
+     * - Tier 1 chip click handlers (replaced by EventCoordinator)
+     * - ScreenManager.showTier2() calls (now in main.js _registerEvents)
+     * All functionality moved to EventCoordinator in main.js Line 103-137
+     */
 
-        // Tier 2 is dynamic, handled in ScreenManager.renderTier2
-    },
 
     /**
      * 初始化卡片相關事件
@@ -324,15 +233,13 @@ export const EventManager = {
             });
         }
 
-        // Card Click (to flip back or toggle)
-        const flashcard = document.getElementById('flashcard');
-        if (flashcard) {
-            flashcard.addEventListener('click', (e) => {
-                // Ignore click if on interactive elements
-                if (e.target.closest('button') || e.target.closest('.interactive-token') || e.target.closest('input')) return;
-                flashcard.classList.toggle('flipped');
-            });
-        }
+        // Card Click - REMOVED (now handled by EventCoordinator)
+        // Flashcard flip is handled by EventCoordinator in main.js Line 92-102
+
+        /* DELETED CODE:
+         * - flashcard.addEventListener('click', ...) 
+         * - This prevented duplicate event listeners
+         */
     },
 
     /**

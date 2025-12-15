@@ -1,12 +1,15 @@
 import { AppState } from '../core/state.js';
-import { WordService } from '../services/wordService.js';
-import { StorageService } from '../services/storage.js';
+// Service Imports removed for DI
+
+// Module-scope services
+let services = null;
 
 export const CustomController = {
     name: 'custom-training-screen',
 
-    init() {
+    init(injectedServices) {
         console.log('CustomModule Init');
+        services = injectedServices;
     },
 
     onEnter(params) {
@@ -36,12 +39,11 @@ export const CustomController = {
         }
 
         // Create Set
-        const setName = `Custom Set ${new Date().toLocaleTimeString()}`; // Simple name
-        // Or ask user? For now auto-name or generic.
         // Logic from main.js Step 2235:
 
         // Lookup words
-        const allWords = WordService.getAllWords();
+        // DEPENDENCY: WordService
+        const allWords = services.wordService.getAllWords();
         const foundWords = [];
         const missing = [];
 
@@ -58,7 +60,8 @@ export const CustomController = {
             words: foundWords.map(w => w.english) // persist IDs or English keys
         };
 
-        const result = StorageService.addCustomSet(setObj);
+        // DEPENDENCY: StorageService
+        const result = services.storageService.addCustomSet(setObj);
         if (!result) {
             alert('自訂清單已達上限 (5組)！請先刪除舊的。');
             return;
@@ -73,21 +76,22 @@ export const CustomController = {
         const listEl = document.getElementById('custom-sets-list');
         if (!listEl) return;
 
-        const sets = StorageService.loadCustomSets();
+        // DEPENDENCY: StorageService
+        const sets = services.storageService.loadCustomSets();
         listEl.innerHTML = '';
 
         sets.forEach(set => {
             const card = document.createElement('div');
             card.className = 'custom-set-card card'; // TS-20 Classes
-            // Simple innerHTML based on structure
+            // Use data attributes instead of onclick
             card.innerHTML = `
             <div class="custom-set-header">
                 <div class="custom-set-title">${set.name}</div>
                 <div class="custom-set-info">${new Date(set.date).toLocaleDateString()} • ${set.words.length} words</div>
             </div>
             <div class="custom-set-actions" style="margin-top:12px; display:flex; gap:8px;">
-                <button class="btn btn-primary btn-sm" onclick="app.playCustomSet('${set.id}')">播放</button>
-                <button class="btn btn-outline btn-sm" onclick="app.deleteCustomSet('${set.id}')">刪除</button>
+                <button class="btn btn-primary btn-sm custom-play-btn" data-set-id="${set.id}">播放</button>
+                <button class="btn btn-outline btn-sm custom-delete-btn" data-set-id="${set.id}">刪除</button>
             </div>
           `;
             listEl.appendChild(card);
@@ -95,22 +99,19 @@ export const CustomController = {
     },
 
     playSet(setId) {
-        const sets = StorageService.loadCustomSets();
+        // DEPENDENCY: StorageService
+        const sets = services.storageService.loadCustomSets();
         const set = sets.find(s => s.id === setId);
         if (!set) return;
 
         // Hydrate
-        const allWords = WordService.getAllWords();
+        // DEPENDENCY: WordService
+        const allWords = services.wordService.getAllWords();
         const list = [];
         set.words.forEach(wKey => {
             const w = allWords.find(x => x.english === wKey);
             if (w) list.push(w);
         });
-
-        // Set Logic - Reuse Flashcard Pipeline?
-        // Yes, sets activeWordList and navigates to Practice.
-        // But wait, user said "Two Pipeline". 
-        // If we navigate to 'practice-screen', FlashcardController takes over.
 
         if (list.length === 0) { alert('清單為空！'); return; }
 
@@ -118,17 +119,13 @@ export const CustomController = {
         AppState.customWordList = list; // Persist for other modes (e.g. Verb3)
         AppState.currentIndex = 0;
 
-        // Main Router should handle this.
-        // Returning specific signal?
-        // Or calling app.navigate?
-        // Since this is a module, we can access global app if exposed, or return action.
-        // We will rely on `window.app.navigate` for now as it's the pattern.
         window.app.navigate('practice-screen');
     },
 
     deleteSet(setId) {
         if (confirm('確定刪除?')) {
-            StorageService.deleteCustomSet(setId);
+            // DEPENDENCY: StorageService
+            services.storageService.deleteCustomSet(setId);
             this.renderSets();
         }
     }

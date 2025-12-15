@@ -1,133 +1,136 @@
+"""
+Flask API Server for AI-powered English Word Translation
+使用 Google Gemini API 提供單字翻譯服務
+"""
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
 import os
-import json
+import google.generativeai as genai
 
 app = Flask(__name__)
 CORS(app)  # 允許前端跨域請求
 
-# 讀取 .env 檔案
-def load_env():
-    api_key = None
-    base_url = "https://models.inference.ai.azure.com"
-    
-    try:
-        with open(".env", "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("GITHUB_MODELS_TOKEN="):
-                    api_key = line.split("=", 1)[1]
-                elif line.startswith("GITHUB_MODELS_ENDPOINT="):
-                    base_url = line.split("=", 1)[1]
-    except FileNotFoundError:
-        raise RuntimeError("找不到 .env 檔案")
-    
-    if not api_key:
-        raise RuntimeError("找不到 GITHUB_MODELS_TOKEN")
-    
-    return api_key, base_url
+# 配置 Gemini API
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA-ch48PvSlmMQcrGz8NSTrIIqUwAV4qUk')
+genai.configure(api_key=GEMINI_API_KEY)
 
-# 初始化 OpenAI client
-api_key, base_url = load_env()
-client = OpenAI(api_key=api_key, base_url=base_url)
+# 使用 Gemini Pro 模型（穩定版）
+model = genai.GenerativeModel('gemini-pro')
 
 @app.route('/api/generate-card', methods=['POST'])
 def generate_card():
+    """
+    生成英文單字卡片
+    
+    請求格式:
+    {
+        "word": "abandon"
+    }
+    
+    回應格式:
+    {
+        "card": {
+            "english": "abandon",
+            "translation": "放棄；遺棄",
+            "pos": "v.",
+            "phonetic": "/əˈbændən/",
+            "exampleEn": "They had to abandon their car.",
+            "exampleZh": "他們不得不拋棄他們的車。"
+        }
+    }
+    """
     try:
-        data = request.json
+        data = request.get_json()
         word = data.get('word', '').strip()
         
         if not word:
             return jsonify({'error': '請提供英文單字'}), 400
         
-        # 建立 AI prompt
-        prompt = f"""請為英文單字 "{word}" 生成完整的學習卡片資料，以 JSON 格式回應。
+        print(f"[API] Generating card for: {word}")
+        
+        # 建立提示詞
+        prompt = f"""請提供英文單字 "{word}" 的以下資訊（用繁體中文）：
 
-要求：
-1. word: 單字本身
-2. chineseFront: 主要中文翻譯（簡短，適合卡片正面顯示）
-3. pos: 詞性（如 n., v., adj., adv. 等）
-4. phonetic: 音標（KK音標或IPA都可）
-5. meaning: 英文解釋 + 中文說明（格式：English explanation. (中文說明)）
-6. collocations: 2-4個常用搭配詞或相關家族單字（包含詞根相同、格林法則相關、同源詞等），每個都要有中文翻譯（格式：["collocation/family word (中文)"]）
-7. sentence1: 一個實用例句，包含 en（英文） 和 cn（中文）
-8. sentence2: 設為 null（只需要一個例句）
+1. 中文翻譯（最常用的意思）
+2. 詞性（如 n., v., adj. 等）
+3. 音標（美式發音）
+4. 一個實用的英文例句
+5. 例句的中文翻譯
 
-請直接回傳 JSON，不要有其他文字說明。範例格式：
+請用 JSON 格式回答：
 {{
-  "word": "Example",
-  "chineseFront": "例子",
-  "pos": "n.",
-  "phonetic": "/ɪɡˈzæm.pəl/",
-  "meaning": "Something that is typical of a group. (某類事物的典型)",
-  "collocations": ["exemplary (模範的)", "exemplify (例證)", "for example (例如)", "set an example (樹立榜樣)"],
-  "sentence1": {{"en": "This is a good example of teamwork.", "cn": "這是團隊合作的好例子。"}},
-  "sentence2": null
+  "translation": "中文翻譯",
+  "pos": "詞性",
+  "phonetic": "音標",
+  "exampleEn": "英文例句",
+  "exampleZh": "例句中文翻譯"
 }}
 
-注意：collocations 應包含詞根相同的家族單字（如 -dict- 詞根：predict, dictate, dictionary）或格林法則相關字（如 father/pater, three/tri）"""
+只需要 JSON，不要其他文字。"""
 
-        # 呼叫 AI
-        print(f"正在為單字 '{word}' 生成卡片...")
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an expert English teacher. Always respond with valid JSON only, no additional text."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-        )
+        # 呼叫 Gemini API
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
         
-        # 解析 AI 回應
-        ai_response = response.choices[0].message.content.strip()
+        print(f"[API] Gemini response: {response_text[:100]}...")
         
-        # 移除可能的 markdown 程式碼區塊標記
-        if ai_response.startswith("```json"):
-            ai_response = ai_response[7:]
-        if ai_response.startswith("```"):
-            ai_response = ai_response[3:]
-        if ai_response.endswith("```"):
-            ai_response = ai_response[:-3]
-        ai_response = ai_response.strip()
+        # 解析回應
+        import json
+        import re
         
-        # 解析 JSON
-        card_data = json.loads(ai_response)
+        # 提取 JSON（移除 markdown 代碼塊）
+        json_match = re.search(r'\{[\s\S]*\}', response_text)
+        if json_match:
+            card_data = json.loads(json_match.group())
+        else:
+            # 降級處理
+            card_data = {
+                "translation": response_text.split('\n')[0][:50],
+                "pos": "",
+                "phonetic": "",
+                "exampleEn": "",
+                "exampleZh": ""
+            }
         
-        # 獲取 token 使用量
-        usage = response.usage
-        tokens_used = {
-            'prompt_tokens': usage.prompt_tokens,
-            'completion_tokens': usage.completion_tokens,
-            'total_tokens': usage.total_tokens
+        # 標準化格式
+        card = {
+            "english": word,
+            "translation": card_data.get("translation", word),
+            "chineseFront": card_data.get("translation", word),
+            "pos": card_data.get("pos", ""),
+            "phonetic": card_data.get("phonetic", ""),
+            "exampleEn": card_data.get("exampleEn", ""),
+            "exampleZh": card_data.get("exampleZh", "")
         }
         
-        print(f"✓ 成功生成單字卡: {word}")
-        print(f"  Token 使用: prompt={usage.prompt_tokens}, completion={usage.completion_tokens}, total={usage.total_tokens}")
+        print(f"[API] ✓ Card generated successfully")
+        return jsonify({'card': card})
         
-        return jsonify({
-            'card': card_data,
-            'tokens': tokens_used
-        })
-        
-    except json.JSONDecodeError as e:
-        print(f"JSON 解析錯誤: {e}")
-        print(f"AI 回應: {ai_response}")
-        return jsonify({'error': 'AI 回應格式錯誤，請重試'}), 500
     except Exception as e:
-        print(f"錯誤: {e}")
+        print(f"[API] Error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok', 'message': 'API 運作中'})
+def health():
+    """健康檢查端點"""
+    return jsonify({
+        'status': 'ok',
+        'model': 'gemini-1.5-flash',
+        'api_key_configured': bool(GEMINI_API_KEY and GEMINI_API_KEY != 'YOUR_API_KEY')
+    })
 
 if __name__ == '__main__':
-    print("=" * 60)
-    print("🚀 英文字卡 AI 生成服務啟動中...")
-    print("=" * 60)
-    print("API 端點:")
-    print("  - POST /api/generate-card  (生成單字卡)")
-    print("  - GET  /api/health         (健康檢查)")
-    print("=" * 60)
+    print("=" * 50)
+    print("🚀 AI Translation API Server")
+    print("=" * 50)
+    print(f"📍 Running on: http://127.0.0.1:5000")
+    print(f"🔑 API Key: {'✓ Configured' if GEMINI_API_KEY else '✗ Not Set'}")
+    print(f"🤖 Model: gemini-1.5-flash")
+    print("=" * 50)
+    print("\n⚠️  請確保已安裝套件:")
+    print("   pip install flask flask-cors google-generativeai")
+    print("\n準備就緒！前端可呼叫 /api/generate-card")
+    print("=" * 50)
+    
     app.run(host='127.0.0.1', port=5000, debug=True)

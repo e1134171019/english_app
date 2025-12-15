@@ -1,47 +1,270 @@
 /**
  * English Practice App - Main Controller (Router)
- * Modular Architecture:
- * - Specific logic is delegated to modules/ (Flashcard, Quiz, Verb3, Custom).
- * - Main.js handles Routing, Navigation, Global State, and Level Selection (Entry Point).
+ * Modular Architecture with Dependency Injection:
+ * - ServiceContainer manages all dependencies
+ * - Specific logic delegated to modules/ (Flashcard, Quiz, Verb3, Custom)
+ * - Main.js handles Routing, Navigation, Global State, and Level Selection
  */
 import { AppState } from './core/state.js';
-import { WordService } from './services/wordService.js';
-import { StorageService } from './services/storage.js';
-import { AudioService } from './services/audio.js';
+import { ServiceContainer } from './core/ServiceContainer.js';
+import { WordService } from './services/wordService.js?v=20251216_FINAL';
+import { StorageService } from './services/storage.js?v=20251216_FINAL';
+import { AudioService } from './services/audio.js?v=20251216_FINAL';
+import { AIService } from './services/AIService.js?v=20251216_LOCAL';
 
-// Feature Modules
-import { FlashcardController } from './modules/FlashcardController.js';
-import { QuizController } from './modules/QuizController.js';
-import { Verb3Controller } from './modules/Verb3Controller.js';
-import { CustomController } from './modules/CustomController.js';
-import { EventManager } from './ui/events.js';
+// Feature Modules (Controller Layer) with Cache Busting
+import { FlashcardController } from './modules/FlashcardController.js?v=20251216_FINAL';
+import { QuizController } from './modules/QuizController.js?v=20251216_FINAL';
+import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
+import { CustomController } from './modules/CustomController.js?v=20251216_FINAL';
+
+// Refactored UI System
+import { EventCoordinator } from './web/ui/EventCoordinator.js';
+import { TooltipManager } from './web/ui/TooltipManager.js';
 
 const App = {
+  container: null,
   currentModule: null,
+  eventCoordinator: null,
+  tooltipManager: null,
 
   async init() {
-    console.log('App Initializing (Modular)...');
+    console.log('🚀 App Initializing with ServiceContainer...');
 
-    // 1. Initialize Services
-    const success = StorageService.init();
-    if (!success) return;
+    // 1. Create Dependency Injection Container
+    this.container = new ServiceContainer();
 
-    // 2. Initial Setup
+    // 2. Register Services (順序無關)
+    this.container.register('wordService', () => WordService);
+    this.container.register('storageService', () => StorageService);
+    this.container.register('audioService', () => AudioService);
+    this.container.register('aiService', () => AIService);
+
+    // 3. Register UI Components
+    // EventCoordinator removed - using data-action pattern instead
+
+    this.container.register('tooltipManager', (c) => new TooltipManager({
+      wordService: c.get('wordService'),
+      audioService: c.get('audioService'),
+      aiService: c.get('aiService')
+    }));
+
+    console.log('[App] ✓ Services registered:', this.container.list().join(', '));
+
+    // 4. Initialize Data Layer
+    const storage = this.container.get('storageService');
+    const wordService = this.container.get('wordService');
+
+    // Parallel Init
+    const [storageSuccess, wordSuccess] = await Promise.all([
+      Promise.resolve(storage.init()), // storage.init is likely sync but safe to wrap
+      wordService.init()
+    ]);
+
+    if (!wordSuccess) {
+      console.error('[App] WordService init failed');
+      // Handle error, maybe show UI toast
+    }
+
+    if (!storageSuccess) {
+      console.error('[App] StorageService init failed');
+      return;
+    }
+
+    // 5. Initialize UI Components
+    this.tooltipManager = this.container.get('tooltipManager');
+    try {
+      this.tooltipManager.init();
+    } catch (error) {
+      console.error('[App] TooltipManager init failed:', error);
+    }
+
+    // 7. Setup event handling (data-action pattern)
+    this._registerEvents();
+
+    // 8. Setup navigation and level selection
     this.updateStats();
     this.setupNavigation();
     this.setupLevelSelect();
 
-    // Modules Init
-    FlashcardController.init();
-    QuizController.init();
-    Verb3Controller.init();
-    CustomController.init();
+    // 6. Initialize feature modules (With Dependency Injection)
 
-    // Global Events
-    EventManager.init();
+    // Flashcard: Needs wordService, audioService
+    FlashcardController.init({
+      wordService: this.container.get('wordService'),
+      audioService: this.container.get('audioService')
+    });
 
-    // 3. Initial Screen
+    // Quiz: Needs audioService
+    QuizController.init({
+      audioService: this.container.get('audioService')
+    });
+
+    // Verb3: Needs wordService, audioService
+    Verb3Controller.init({
+      wordService: this.container.get('wordService'),
+      audioService: this.container.get('audioService')
+    });
+
+    // Custom: Needs wordService, storageService
+    CustomController.init({
+      wordService: this.container.get('wordService'),
+      storageService: this.container.get('storageService')
+    });
+
+    // 7. Show initial screen
     this.navigate('home-screen');
+
+    console.log('✅ App Initialized Successfully');
+  },
+
+  /**
+   * Setup unified event handling
+   * Uses single click listener with data-action pattern
+   * @private
+   */
+  _registerEvents() {
+    document.addEventListener('click', this._handleGlobalClick.bind(this), true);
+    console.log('[App] ✓ Global click handler registered');
+  },
+
+  /**
+   * Global click handler - handles all click events with priority order
+   * @private
+   */
+  _handleGlobalClick(e) {
+    // Priority 1: Navigation (data-screen)
+    const nav = e.target.closest('[data-screen]');
+    if (nav) {
+      const screen = nav.dataset.screen;
+      const mode = nav.dataset.mode;
+      this.navigate(screen, mode ? { mode } : undefined);
+      return;
+    }
+
+    // Priority 2: Interactive Word (Tooltip)
+    const token = e.target.closest('.interactive-word');
+    if (token) {
+      e.stopPropagation();
+      const word = token.dataset.word || token.textContent.trim();
+      const tm = this.container.get('tooltipManager');
+      tm.show(word, { x: e.clientX, y: e.clientY });
+      return;
+    }
+
+    // Priority 3: Action buttons
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
+      this._dispatchAction(btn.dataset.action, btn, e);
+      return;
+    }
+
+    // Priority 4: Card flip (lowest priority)
+    const card = e.target.closest('#flashcard');
+    if (card && !e.target.closest('button, input, .interactive-word, [data-action]')) {
+      card.classList.toggle('flipped');
+    }
+  },
+
+  /**
+   * Dispatch action based on data-action attribute
+   * @private
+   */
+  _dispatchAction(action, el, e) {
+    const actions = {
+      // Level selection
+      'confirm-level': () => this.confirmLevelSelection(),
+      'select-tier1': () => {
+        // Remove active from all
+        document.querySelectorAll('#tier1-chips .chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+
+        // Determine tier
+        let val = 'JH';
+        const txt = el.textContent;
+        if (txt.includes('高中')) val = 'SH';
+        else if (txt.includes('進階')) val = 'ADV';
+
+        AppState.currentTier = val;
+        this.renderTier2(val);
+        console.log('[App] Tier 1 selected:', val);
+      },
+      'select-tier2': () => {
+        // Remove active from all
+        document.querySelectorAll('#tier2-chips .chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+
+        // Get level from data attribute
+        const opt = el.dataset.level;
+
+        // Set temp levels
+        if (opt.startsWith('ALL')) {
+          AppState.tempLevels = (opt === 'ALL_JH' ? ['J1', 'J2', 'J3'] : ['H1', 'H2', 'H3']);
+        } else {
+          AppState.tempLevels = [opt === 'ADV' ? 'H3' : opt];
+        }
+
+        console.log('[App] Tier 2 selected:', opt, '→', AppState.tempLevels);
+      },
+
+      // Practice screen
+      'speak-word': () => this.speakCurrentWord(),
+      'speak-example': () => this.speakExample(),
+      'prev-card': () => this.prevCard(),
+      'next-card': () => this.nextCard(),
+      'toggle-autoplay': () => this.toggleAutoPlay(),
+
+      // Quiz screen
+      'speak-quiz': () => this.speakQuizWord(),
+      'skip-quiz': () => this.checkQuiz(true),
+      'submit-quiz': () => this.checkQuiz(),
+      'prev-quiz': () => this.prevQuizQuestion(),
+      'next-quiz': () => this.nextQuizQuestion(),
+
+      // Verb3 screen
+      'switch-verb3-level': () => this.switchVerb3Level(el.dataset.level),
+      'check-verb3': () => this.checkVerb3(),
+      'prev-verb3': () => this.prevVerb3Question(),
+      'next-verb3': () => this.nextVerb3Question(),
+
+      // Custom screen
+      'process-custom': () => this.processCustomWords(),
+      'play-custom-set': () => {
+        const setId = el.dataset.setId;
+        if (setId) {
+          console.log('[App] Play custom set:', setId);
+          const CustomController = this.currentModule;
+          if (CustomController && CustomController.playSet) {
+            CustomController.playSet(setId);
+          } else {
+            window.app.playCustomSet(setId);
+          }
+        }
+      },
+      'delete-custom-set': () => {
+        const setId = el.dataset.setId;
+        if (setId) {
+          console.log('[App] Delete custom set:', setId);
+          const CustomController = this.currentModule;
+          if (CustomController && CustomController.deleteSet) {
+            CustomController.deleteSet(setId);
+          } else {
+            window.app.deleteCustomSet(setId);
+          }
+        }
+      },
+
+      // Global
+      'go-back': () => this.goBack()
+    };
+
+    const handler = actions[action];
+    if (handler) {
+      console.log('[App] Action:', action);
+      handler();
+    } else {
+      console.warn('[App] Unknown action:', action, el);
+    }
   },
 
   updateStats() {
@@ -141,16 +364,7 @@ const App = {
     if (backBtn) backBtn.addEventListener('click', () => this.goBack());
     window.app = this;
 
-    // Delegate Flip Card Click (Global Listener)
-    const card = document.getElementById('flashcard');
-    if (card) {
-      card.addEventListener('click', (e) => {
-        if (this.currentModule === FlashcardController) {
-          if (e.target.closest('button') || e.target.closest('.token')) return;
-          this.flipCard();
-        }
-      });
-    }
+    // Note: Flashcard flip is now handled by EventCoordinator in _registerEvents()
   },
 
   updateHeader(screenId) {
@@ -199,21 +413,8 @@ const App = {
   /* --- Level Selection (Lobby) --- */
 
   setupLevelSelect() {
-    // Tier 1 Chips
-    document.querySelectorAll('#tier1-chips .chip').forEach(chip => {
-      chip.addEventListener('click', (e) => {
-        document.querySelectorAll('#tier1-chips .chip').forEach(c => c.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-
-        let val = 'JH';
-        const txt = e.currentTarget.textContent;
-        if (txt.includes('高中')) val = 'SH';
-        else if (txt.includes('進階')) val = 'ADV';
-
-        AppState.currentTier = val;
-        this.renderTier2(val);
-      });
-    });
+    // Note: Tier 1/2 chips are now handled by EventCoordinator in _registerEvents()
+    // But we need to create tier 2 dynamically in renderTier2()
   },
 
   renderTier2(tier1) {
@@ -228,14 +429,8 @@ const App = {
       const btn = document.createElement('button');
       btn.className = 'chip';
       btn.textContent = map[opt] || opt;
-      btn.onclick = () => {
-        document.querySelectorAll('#tier2-chips .chip').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Set Temp
-        if (opt.startsWith('ALL')) AppState.tempLevels = (opt === 'ALL_JH' ? ['J1', 'J2', 'J3'] : ['H1', 'H2', 'H3']);
-        else AppState.tempLevels = [opt === 'ADV' ? 'H3' : opt];
-      };
+      btn.dataset.level = opt;
+      btn.dataset.action = 'select-tier2'; // Add data-action for global handler
       container.appendChild(btn);
     });
   },

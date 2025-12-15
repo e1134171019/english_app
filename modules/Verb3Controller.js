@@ -1,12 +1,15 @@
 import { AppState } from '../core/state.js';
-import { WordService } from '../services/wordService.js';
-import { AudioService } from '../services/audio.js';
+// WordService and AudioService imports removed for DI
+
+// Module-scope services variable to avoid 'this' context issues
+let services = null;
 
 export const Verb3Controller = {
     name: 'verb3-screen',
 
-    init() {
+    init(injectedServices) {
         console.log('Verb3Module Init');
+        services = injectedServices;
         // Ensure stats exist
         AppState.verb3Stats = { correct: 0, wrong: 0 };
     },
@@ -14,8 +17,7 @@ export const Verb3Controller = {
     onEnter(params) {
         console.log('Verb3Module Enter', params);
 
-        // Safety Fix: Ensure other screens are hidden (Dual-Layer Protection)
-        // Sometimes main.js nuclear option might miss if DOM is updating slowly.
+        // Safety Fix: Ensure other screens are hidden
         const conflictScreens = ['quiz-screen', 'practice-screen', 'level-select-screen'];
         conflictScreens.forEach(id => {
             const el = document.getElementById(id);
@@ -26,30 +28,26 @@ export const Verb3Controller = {
         const self = document.getElementById('verb3-screen');
         if (self) { self.style.display = 'block'; self.classList.add('active'); }
 
-        // TS-13 Integration: Use Active List from Level Select if available
+        // TS-13 Integration
         if (AppState.activeWordList && AppState.activeWordList.length > 0) {
             const verbs = AppState.activeWordList.filter(w => w.verb);
             if (verbs.length > 0) {
                 console.log(`Verb3: Loaded ${verbs.length} verbs from Level Select`);
                 AppState.verb3List = verbs;
-            } else {
-                // Active list has no verbs? Fallback or Alert?
-                // Alert maybe intrusive if switching modes. Just fallback to default level.
             }
         } else {
-            // Not from Level Select? Ensure we clear list to trigger auto-load
             AppState.verb3List = [];
         }
 
-        // Reset Stats on Entry? Or keep session? Reset usually.
         AppState.verb3Stats = { correct: 0, wrong: 0 };
         this.updateStatsUI();
 
-        // Use default level if not set
         if (!AppState.verb3Level) AppState.verb3Level = 'JH';
         this.refreshUI();
         this.loadQuestion();
     },
+
+    // ... (rest of the methods remain mostly the same, updated to use 'services' instead of 'this.services') ...
 
     onExit() {
         // Cleanup
@@ -57,12 +55,9 @@ export const Verb3Controller = {
 
     switchLevel(level) {
         AppState.verb3Level = level;
-        AppState.verb3List = []; // Clear to force reload
-
-        // Reset Stats when switching level? Yes.
+        AppState.verb3List = [];
         AppState.verb3Stats = { correct: 0, wrong: 0 };
         this.updateStatsUI();
-
         this.refreshUI();
         this.loadQuestion();
     },
@@ -76,22 +71,20 @@ export const Verb3Controller = {
     loadQuestion() {
         let list = AppState.verb3List;
 
-        // Load Data if empty
         if (!list || list.length === 0) {
             const targetLevel = AppState.verb3Level;
             let sourceList = [];
 
             if (targetLevel === 'CUSTOM') {
-                // Removed per user request
                 alert('此功能已移除');
                 return;
             } else {
-                sourceList = WordService.getAllWords();
+                // DEPENDENCY: WordService (accessed via module scope)
+                sourceList = services.wordService.getAllWords();
             }
 
             list = sourceList.filter(w => {
                 if (!w.verb) return false;
-                // Level Filter for STANDARD levels
                 if (targetLevel === 'JH') {
                     const sl = (w.schoolLevel || w.level || '').toUpperCase();
                     return sl.startsWith('J') || sl === 'JH';
@@ -100,7 +93,6 @@ export const Verb3Controller = {
                     const sl = (w.schoolLevel || w.level || '').toUpperCase();
                     return sl.startsWith('H') || sl === 'SH' || sl === 'ADV' || sl === 'S';
                 }
-
                 return false;
             });
 
@@ -109,13 +101,11 @@ export const Verb3Controller = {
                 return;
             }
 
-            // Randomize
             list.sort(() => Math.random() - 0.5);
             AppState.verb3List = list;
             AppState.verb3Index = 0;
         }
 
-        // Reset Index check
         if (AppState.verb3Index >= list.length) AppState.verb3Index = 0;
 
         const word = list[AppState.verb3Index];
@@ -129,25 +119,21 @@ export const Verb3Controller = {
         document.getElementById('v3-counter').textContent = `${AppState.verb3Index + 1} / ${total}`;
         document.getElementById('v3-base').textContent = word.verb.base || word.english;
 
-        // TS-14 New Fields
         const zhEl = document.getElementById('v3-zh');
         if (zhEl) zhEl.textContent = word.chinese || word.translation || '';
 
         const lvlEl = document.getElementById('v3-level-badge');
         if (lvlEl) lvlEl.textContent = word.schoolLevel || word.level || '';
 
-        // Inputs
         this.resetInput('v3-past');
         this.resetInput('v3-pp');
 
-        // Buttons
         const checkBtn = document.getElementById('v3-check-btn');
-
-        this.isAnswerChecked = false; // Reset State
+        this.isAnswerChecked = false;
         if (checkBtn) {
             checkBtn.disabled = false;
             checkBtn.classList.remove('hidden');
-            checkBtn.textContent = '檢查答案'; // Reset Text
+            checkBtn.textContent = '檢查答案';
         }
 
         const msg = document.getElementById('v3-msg');
@@ -176,7 +162,6 @@ export const Verb3Controller = {
     checkAnswer() {
         const checkBtn = document.getElementById('v3-check-btn');
 
-        // State Check: If already checked, go to Next
         if (this.isAnswerChecked) {
             this.nextQuestion();
             return;
@@ -196,9 +181,8 @@ export const Verb3Controller = {
         const ppCorrect = (word.verb.pp || '').toLowerCase();
 
         let isAllCorrect = true;
-        let showAnswer = false; // Always show answer on error for this requirement
+        let showAnswer = false;
 
-        // Validate Past
         if (pVal === pCorrect) {
             pInput.classList.add('success');
             pInput.classList.remove('error');
@@ -208,7 +192,6 @@ export const Verb3Controller = {
             showAnswer = true;
         }
 
-        // Validate PP
         if (ppVal === ppCorrect) {
             ppInput.classList.add('success');
             ppInput.classList.remove('error');
@@ -222,20 +205,19 @@ export const Verb3Controller = {
             AppState.verb3Stats.correct++;
             msg.textContent = `✅ 完全正確！`;
             msg.className = 'success';
-            AudioService.playCorrectSound();
+            // DEPENDENCY: AudioService (accessed via module scope)
+            // services.audioService.playCorrectSound();
         } else {
             AppState.verb3Stats.wrong++;
-
-            // Format: 過去式 :accounted, 過去分詞: accounted
             msg.textContent = `❌ 過去式: ${word.verb.past}, 過去分詞: ${word.verb.pp}`;
             msg.className = 'error';
-            AudioService.playErrorSound();
+            // DEPENDENCY: AudioService (accessed via module scope)
+            // services.audioService.playErrorSound();
         }
 
         this.updateStatsUI();
         msg.classList.remove('hidden');
 
-        // Change Button to Next
         this.isAnswerChecked = true;
         if (checkBtn) checkBtn.textContent = '下一題';
     },

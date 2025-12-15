@@ -1,0 +1,48 @@
+[
+    {
+        "english": "test",
+        "translation": "測試",
+        "pos": "n.",
+        "phonetic": "/test/",
+        "exampleEn": "This is a test sentence.",
+        "exampleZh": "這是一個測試句子。",
+        "level": "J1",
+        "schoolLevel": "JH",
+        "verb": null,
+        "synonyms": []
+    },
+    {
+        "english": "example",
+        "translation": "範例",
+        "pos": "n.",
+        "phonetic": "/ɪɡˈzæmpl/",
+        "exampleEn": "Can you give me an example?",
+        "exampleZh": "你能給我一個範例嗎？",
+        "level": "J2",
+        "schoolLevel": "JH",
+        "verb": null,
+        "synonyms": [
+            "instance",
+            "sample"
+        ]
+    },
+    {
+        "english": "abandon",
+        "translation": "放棄",
+        "pos": "v.",
+        "phonetic": "/əˈbændən/",
+        "exampleEn": "They had to abandon their car in the flood.",
+        "exampleZh": "他們不得不在洪水中放棄他們的車。",
+        "level": "H2",
+        "schoolLevel": "SH",
+        "verb": {
+            "base": "abandon",
+            "past": "abandoned",
+            "pp": "abandoned"
+        },
+        "synonyms": [
+            "desert",
+            "leave"
+        ]
+    }
+]

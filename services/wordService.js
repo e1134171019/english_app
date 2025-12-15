@@ -4,12 +4,59 @@
  */
 
 import { AppState } from '../core/state.js';
-import { wordsData } from '../data/wordsData.js';
+// Removed static import: import { wordsData } from '../data/wordsData.js';
 import { StorageService } from './storage.js';
 
+// Absolute path resolution for JSON (works across all environments)
+const WORDS_JSON_URL = new URL('../data/wordsData.json', import.meta.url);
+
 export const WordService = {
+    wordsData: [], // Runtime cache
+
     /**
-     * Standardize word data structure
+     * Initialize WordService by fetching JSON data
+     * Uses import.meta.url for bulletproof path resolution
+     */
+    async init() {
+        try {
+            console.log('[WordService] Fetching:', WORDS_JSON_URL.href);
+            const response = await fetch(WORDS_JSON_URL, { cache: 'no-store' });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const raw = await response.json();
+
+            // Normalize with fallbacks for schema variations
+            this.wordsData = raw.map(w => ({
+                english: w.english ?? w.English ?? '',
+                translation: w.translation ?? w.Translation ?? w.Chinese ?? w.chinese ?? '',
+                level: w.level ?? w.Level ?? '',
+                pos: w.pos ?? w.POS ?? w.partOfSpeech ?? '',
+                phonetic: w.phonetic ?? w.Phonetic ?? '',
+                exampleEn: w.exampleEn ?? w.example_en ?? '',
+                exampleZh: w.exampleZh ?? w.example_zh ?? '',
+                verb: w.verb ?? null,
+                synonyms: Array.isArray(w.synonyms) ? w.synonyms : [],
+                family: w.family ?? w.family_key ?? '',
+                schoolLevel: w.schoolLevel ?? '',
+                pattern: w.pattern ?? '',
+                patternZh: w.patternZh ?? ''
+            }));
+
+            console.log(`[WordService] ✅ Loaded ${this.wordsData.length} words`);
+            console.log('[WordService] First word:', this.wordsData[0]);
+            return true;
+        } catch (error) {
+            console.error('[WordService] ❌ Failed to load wordsData.json:', error);
+            this.wordsData = [];
+            return false;
+        }
+    },
+
+    /**
+     * Standardize word data structure (legacy - now done in init)
      * @param {Object} raw - Raw data from different sources
      */
     normalizeWord(raw) {
@@ -31,7 +78,8 @@ export const WordService = {
     },
 
     getAllWords() {
-        return [...wordsData, ...AppState.getUserWords()].map(w => this.normalizeWord(w));
+        // Data already normalized in init(), just merge with user words
+        return [...this.wordsData, ...AppState.getUserWords().map(w => this.normalizeWord(w))];
     },
 
     /**
@@ -40,7 +88,7 @@ export const WordService = {
      */
     updateActiveWordList(levels) {
         // 合併內建單字和使用者單字
-        const allWords = [...wordsData, ...AppState.getUserWords()];
+        const allWords = [...this.wordsData, ...AppState.getUserWords()];
 
         // 過濾掉被封鎖的單字
         const blockedWords = AppState.getBlockedWords();
@@ -65,13 +113,13 @@ export const WordService = {
      */
     getWordCounts() {
         // 檢查 wordsData 是否存在
-        if (typeof wordsData === 'undefined' || !Array.isArray(wordsData)) {
+        if (!this.wordsData || !Array.isArray(this.wordsData)) {
             console.warn('wordsData not available, skipping word count update');
             return null;
         }
 
         // 計算各等級的單字數量
-        const allWords = [...wordsData, ...AppState.getUserWords()];
+        const allWords = [...this.wordsData, ...AppState.getUserWords()];
         const counts = {
             J1: 0, J2: 0, J3: 0,
             H1: 0, H2: 0, H3: 0,
@@ -146,9 +194,8 @@ export const WordService = {
         const invalidWords = [];
 
         // 建立快速查詢 Map (lowercase)
-        // Ensure map creation handles inconsistent keys if needed, but assuming English is key
         const wordMap = new Map();
-        [...wordsData, ...AppState.getUserWords()].forEach(w => {
+        [...this.wordsData, ...AppState.getUserWords()].forEach(w => {
             const key = (w.English || w.english || '').toLowerCase();
             if (key) wordMap.set(key, w);
         });
@@ -164,5 +211,27 @@ export const WordService = {
         });
 
         return { validWords, invalidWords };
+    },
+
+    /**
+     * 獲取當前活動的單字列表 (Practice List)
+     * @returns {Array}
+     */
+    getActiveProcessingWords() {
+        return AppState.activeWordList || [];
+    },
+
+    /**
+     * 將句子標記化為可點擊的 HTML
+     * @param {string} sentence 
+     * @returns {string} HTML string
+     */
+    tokenizeSentence(sentence) {
+        if (!sentence) return '';
+        // Simple tokenization by space, preserving punctuation could be complex.
+        // For now, split by space.
+        return sentence.split(' ').map(word =>
+            `<span class="interactive-word" data-word="${word.replace(/[^a-zA-Z]/g, '')}">${word}</span>`
+        ).join(' ');
     }
 };

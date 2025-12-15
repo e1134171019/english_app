@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>英文練習 App</title>
-  <link rel="stylesheet" href="style.css?v=20251215_30">
+  <link rel="stylesheet" href="styles/app.css?v=20251216">
 </head>
 
 <body>
@@ -64,7 +64,7 @@
         <h3 style="font-size: var(--text-sm); color: var(--text-hint); margin: 0 0 8px 4px;">開始練習</h3>
         <div class="bento-grid">
           <!-- Hero Item -->
-          <div class="bento-item hero" onclick="app.navigate('level-select-screen', {mode: 'practice'})">
+          <div class="bento-item hero nav-to-screen" data-screen="level-select-screen" data-mode="practice">
             <svg class="icon" viewBox="0 0 24 24">
               <path
                 d="M12 6.09L14.77 12H9.23L12 6.09M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.19-2h4.38L12 11.35 9.81 18zm3.38-10.9h-2.38l-2.03 4.4h6.44l-2.03-4.4z">
@@ -72,25 +72,25 @@
             </svg>
             <div style="text-align: left;">
               <div class="label">單字練習</div>
-              <div style="font-size: 10px; color: var(--text-sub);">Flashcards Mode</div>
+              <div style="font-size: 10px; color: var(--text-sub);">單字卡模式</div>
             </div>
           </div>
 
-          <div class="bento-item" onclick="app.navigate('level-select-screen', {mode: 'quiz'})">
+          <div class="bento-item nav-to-screen" data-screen="level-select-screen" data-mode="quiz">
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path>
             </svg>
             <div class="label">聽力練習</div>
           </div>
 
-          <div class="bento-item" onclick="app.navigate('verb3-screen')">
+          <div class="bento-item nav-to-screen" data-screen="verb3-screen">
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path>
             </svg>
             <div class="label">動詞三態</div>
           </div>
 
-          <div class="bento-item" onclick="app.navigate('custom-training-screen')">
+          <div class="bento-item nav-to-screen" data-screen="custom-training-screen">
             <svg class="icon" viewBox="0 0 24 24">
               <path
                 d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z">
@@ -99,14 +99,14 @@
             <div class="label">我的專屬</div>
           </div>
 
-          <div class="bento-item" onclick="app.navigate('add-screen')">
+          <div class="bento-item nav-to-screen" data-screen="add-screen">
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
             </svg>
-            <div class="label">新增單字</div>
+            <div class="label">新增</div>
           </div>
 
-          <div class="bento-item" onclick="app.navigate('delete-screen')">
+          <div class="bento-item nav-to-screen" data-screen="delete-screen">
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
             </svg>
@@ -122,9 +122,9 @@
           <div class="input-group">
             <label class="nav-label" style="font-size: 12px; margin-bottom: 8px; display: block;">教育階段</label>
             <div class="chip-group" id="tier1-chips">
-              <button class="chip" data-val="JH">國中 Junior High</button>
-              <button class="chip" data-val="SH">高中 Senior High</button>
-              <button class="chip" data-val="ADV">進階 Advanced</button>
+              <button type="button" class="chip" data-action="select-tier1" data-val="JH">國中 Junior High</button>
+              <button type="button" class="chip" data-action="select-tier1" data-val="SH">高中 Senior High</button>
+              <button type="button" class="chip" data-action="select-tier1" data-val="ADV">進階 Advanced</button>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" style="margin-top: 32px;" onclick="app.confirmLevelSelection()">開始</button>
+        <button type="button" class="btn btn-primary" data-action="confirm-level" style="margin-top: 32px;">開始</button>
       </section>
 
       <!-- C. Practice Screen -->
@@ -166,7 +166,7 @@
                   <div id="card-school-label"
                     style="position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--text-sub);"></div>
                   <h2 id="card-front-text" style="font-size: 2.5rem; margin: auto;">中文</h2>
-                  <div style="color: var(--text-hint); font-size: var(--text-sm);">點擊翻面</div>
+                  <div style="color: var(--text-hint); font-size: var(--text-sm); margin-top: 16px;">點擊翻面</div>
                 </div>
 
                 <!-- Back -->
@@ -179,8 +179,7 @@
                         id="card-pos">n.</span>
                     </div>
 
-                    <button class="icon-btn" onclick="event.stopPropagation(); app.speakCurrentWord();"
-                      style="color: var(--text-main);">
+                    <button type="button" class="icon-btn" data-action="speak-word" title="發音" aria-label="Speak word">
                       <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
                         <path
                           d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z">
@@ -203,7 +202,8 @@
                       <div id="card-sentence-en"
                         style="line-height: 1.5; font-size: 1.1rem; color: var(--text-main); flex: 1; margin-right: 8px;">
                       </div>
-                      <button class="icon-btn" onclick="event.stopPropagation(); app.speakExample();"
+                      <button type="button" class="icon-btn" data-action="speak-example" title="播放例句"
+                        aria-label="Speak example"
                         style="width: 24px; height: 24px; color: var(--primary-color); flex-shrink: 0; padding: 0;">
                         <svg viewBox="0 0 24 24">
                           <path
@@ -235,22 +235,22 @@
         <!-- Controls -->
         <div
           style="display: flex; align-items: center; justify-content: center; gap: 32px; width: 100%; max-width: 280px; margin: 24px auto 100px auto;">
-          <button class="icon-btn icon-btn-primary" style="width: 48px; height: 48px; border: none;"
-            onclick="app.prevCard()">
+          <button type="button" class="icon-btn icon-btn-primary" data-action="prev-card"
+            style="width: 48px; height: 48px; border: none;">
             <svg viewBox="0 0 24 24">
               <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
             </svg>
           </button>
 
-          <button class="btn btn-text" id="autoplay-btn" onclick="app.toggleAutoPlay()">
+          <button type="button" class="btn btn-text" id="autoplay-btn" data-action="toggle-autoplay">
             <svg style="width: 20px; height: 20px; margin-right: 6px;" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"></path>
             </svg>
             自動播放
           </button>
 
-          <button class="icon-btn icon-btn-primary" style="width: 48px; height: 48px; border: none;"
-            onclick="app.nextCard()">
+          <button type="button" class="icon-btn icon-btn-primary" data-action="next-card"
+            style="width: 48px; height: 48px; border: none;">
             <svg viewBox="0 0 24 24">
               <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
             </svg>
@@ -261,9 +261,8 @@
       <!-- D. Quiz Screen -->
       <section id="quiz-screen" class="screen">
         <div style="text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center;">
-          <div class="card"
-            style="display: inline-flex; padding: 20px; border-radius: 50%; margin-bottom: 16px; cursor: pointer; transition: transform 0.1s;"
-            onclick="app.speakQuizWord()">
+          <div class="card" data-action="speak-quiz"
+            style="display: inline-flex; padding: 20px; border-radius: 50%; margin-bottom: 16px; cursor: pointer; transition: transform 0.1s;">
             <svg style="width: 48px; height: 48px; fill: var(--primary);" viewBox="0 0 24 24">
               <path
                 d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z">
@@ -279,21 +278,21 @@
             style="margin-top: 8px; margin-bottom: 16px; padding: 8px; border-radius: 8px;"></div>
 
           <div style="display: flex; gap: 12px; width: 100%; max-width: 280px;">
-            <button id="quiz-skip-btn" class="btn btn-outline" style="flex: 1;"
-              onclick="app.checkQuiz(true)">跳過</button>
-            <button id="quiz-submit-btn" class="btn btn-primary" style="flex: 1;" onclick="app.checkQuiz()">送出</button>
-            <button id="quiz-next-btn" class="btn btn-primary hidden"
-              style="flex: 1; background: var(--success); border-color: var(--success);"
-              onclick="app.nextQuizQuestion()">下一題</button>
+            <button type="button" id="quiz-skip-btn" class="btn btn-outline skip-quiz-btn" data-action="skip-quiz"
+              style="flex: 1;">跳過</button>
+            <button type="button" id="quiz-submit-btn" class="btn btn-primary submit-quiz-btn" data-action="submit-quiz"
+              style="flex: 1;">送出</button>
+            <button type="button" id="quiz-next-btn" class="btn btn-primary hidden" data-action="next-quiz"
+              style="flex: 1; background: var(--success); border-color: var(--success);">下一題</button>
           </div>
 
           <!-- Navigation Row (Prev / Count / Next) -->
           <div
             style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 350px; margin-top: 24px;">
-            <button class="btn btn-outline" style="min-width: 80px;" onclick="app.prevQuizQuestion()">上一題</button>
+            <button type="button" class="btn btn-outline" data-action="prev-quiz" style="min-width: 80px;">上一題</button>
             <span id="quiz-counter"
               style="font-weight: 500; color: var(--text-sub); white-space: nowrap; margin: 0 12px;">1 / 10</span>
-            <button class="btn btn-outline" style="min-width: 80px;" onclick="app.nextQuizQuestion()">下一題</button>
+            <button type="button" class="btn btn-outline" data-action="next-quiz" style="min-width: 80px;">下一題</button>
           </div>
         </div>
       </section>
@@ -301,8 +300,10 @@
       <!-- E. Verb3 Screen -->
       <section id="verb3-screen" class="screen">
         <div class="chip-group" style="justify-content: center; margin-bottom: 24px;">
-          <button class="chip active" id="v3-tab-jh" onclick="app.switchVerb3Level('JH')">國中 (JH)</button>
-          <button class="chip" id="v3-tab-sh" onclick="app.switchVerb3Level('SH')">高中 (SH)</button>
+          <button type="button" class="chip active" id="v3-tab-jh" data-action="switch-verb3-level" data-level="JH">國中
+            (JH)</button>
+          <button type="button" class="chip" id="v3-tab-sh" data-action="switch-verb3-level" data-level="SH">高中
+            (SH)</button>
         </div>
 
         <div class="card" style="text-align: center;">
@@ -329,8 +330,8 @@
           </div>
 
           <!-- Action Area -->
-          <button id="v3-check-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 16px;"
-            onclick="app.checkVerb3()">檢查答案</button>
+          <button type="button" id="v3-check-btn" class="btn btn-primary" data-action="check-verb3"
+            style="width: 100%; margin-bottom: 16px;">檢查答案</button>
 
           <div id="v3-msg" class="hidden"
             style="margin-bottom: 24px; font-weight: 500; padding: 12px; border-radius: 8px;"></div>
@@ -352,10 +353,10 @@
           <!-- Navigation Area (Bottom) -->
           <div
             style="display: flex; gap: 16px; justify-content: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
-            <button id="v3-prev-btn" class="btn btn-outline" style="flex: 1;"
-              onclick="app.prevVerb3Question()">上一個</button>
-            <button id="v3-next-btn" class="btn btn-outline" style="flex: 1;"
-              onclick="app.nextVerb3Question()">下一個</button>
+            <button type="button" id="v3-prev-btn" class="btn btn-outline" data-action="prev-verb3"
+              style="flex: 1;">上一個</button>
+            <button type="button" id="v3-next-btn" class="btn btn-outline" data-action="next-verb3" style="flex: 1;">
+              下一個</button>
           </div>
         </div>
       </section>
@@ -367,8 +368,8 @@
           <h3 style="margin-top: 0;">匯入單字 (TS-18)</h3>
           <p style="font-size: var(--text-xs); color: var(--text-sub); margin-bottom: 12px;">輸入英文單字 (逗號/空格/換行分隔)</p>
           <textarea id="custom-input" class="input-field" rows="4" placeholder="apple banana, book"></textarea>
-          <button class="btn btn-primary" style="margin-top: 12px; width:100%;"
-            onclick="app.processCustomWords()">分析並儲存</button>
+          <button type="button" class="btn btn-primary" data-action="process-custom"
+            style="margin-top: 12px; width:100%;">分析並儲存</button>
         </div>
 
         <!-- Saved Lists (TS-20) -->
@@ -391,7 +392,7 @@
     </main>
 
     <!-- Global Floating Back Button (TS-23) -->
-    <button id="floating-back-btn" class="floating-back-btn hidden" onclick="app.goBack()">
+    <button type="button" id="floating-back-btn" class="floating-back-btn hidden" data-action="go-back">
       <svg viewBox="0 0 24 24">
         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
       </svg>
@@ -400,13 +401,13 @@
 
     <!-- 3. Bottom Navigation -->
     <nav class="bottom-nav">
-      <button class="nav-item active" onclick="app.navigate('home-screen')">
+      <button class="nav-item active nav-to-screen" data-screen="home-screen">
         <svg viewBox="0 0 24 24">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
         </svg>
         <span class="nav-label">首頁</span>
       </button>
-      <button class="nav-item" onclick="app.navigate('level-select-screen', {mode: 'practice'})">
+      <button class="nav-item nav-to-screen" data-screen="level-select-screen" data-mode="practice">
         <svg viewBox="0 0 24 24">
           <path
             d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z">
@@ -414,13 +415,13 @@
         </svg>
         <span class="nav-label">單字</span>
       </button>
-      <button class="nav-item" onclick="app.navigate('level-select-screen', {mode: 'quiz'})">
+      <button class="nav-item nav-to-screen" data-screen="level-select-screen" data-mode="quiz">
         <svg viewBox="0 0 24 24">
           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path>
         </svg>
         <span class="nav-label">聽力練習</span>
       </button>
-      <button class="nav-item" onclick="app.navigate('verb3-screen')">
+      <button class="nav-item nav-to-screen" data-screen="verb3-screen">
         <svg viewBox="0 0 24 24">
           <path
             d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z">
@@ -429,7 +430,7 @@
         <span class="nav-label">三態</span>
       </button>
       <!-- 5th Item Custom -->
-      <button class="nav-item" onclick="app.navigate('custom-training-screen')">
+      <button class="nav-item nav-to-screen" data-screen="custom-training-screen">
         <svg viewBox="0 0 24 24">
           <path
             d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z">
@@ -440,11 +441,11 @@
     </nav>
 
     <!-- Tooltip Layer -->
-    <div id="translation-tooltip" class="translation-tooltip hidden"></div>
+    <div id="translation-tooltip"></div>
 
   </div>
 
-  <script type="module" src="main.js?v=20251214_29"></script>
+  <script type="module" src="main.js?v=20251216_LOCAL_API"></script>
 </body>
 
 </html>

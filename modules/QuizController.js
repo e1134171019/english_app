@@ -1,11 +1,15 @@
 import { AppState } from '../core/state.js';
-import { AudioService } from '../services/audio.js';
+// AudioService import removed for DI
+
+// Module-scope services
+let services = null;
 
 export const QuizController = {
     name: 'quiz-screen',
 
-    init() {
+    init(injectedServices) {
         console.log('QuizModule Init');
+        services = injectedServices;
         // Input Enter Key Listener
         const input = document.getElementById('quiz-input');
         if (input) {
@@ -31,7 +35,9 @@ export const QuizController = {
     },
 
     onExit() {
-        AudioService.cancelSpeech();
+        if (services && services.audioService) {
+            services.audioService.cancelSpeech();
+        }
     },
 
     // --- Logic ---
@@ -51,18 +57,23 @@ export const QuizController = {
         const feedback = document.getElementById('quiz-feedback');
         const submitBtn = document.getElementById('quiz-submit-btn');
         const skipBtn = document.getElementById('quiz-skip-btn');
+        const nextBtn = document.getElementById('quiz-next-btn');
 
         if (input) { input.value = ''; input.disabled = false; input.focus(); }
         if (feedback) { feedback.textContent = ''; feedback.className = 'hidden'; }
         if (submitBtn) submitBtn.classList.remove('hidden');
         if (skipBtn) skipBtn.classList.remove('hidden');
+        // Hide next button initially? Original code didn't explicit hide next button here but logic implies it.
+        // Let's stick to original behavior for UI reset.
+        if (nextBtn) nextBtn.classList.add('hidden'); // Logic inferred from checkAnswer which shows it.
 
         this.updateCounter();
     },
 
     speakWord() {
         const word = AppState.activeWordList[AppState.currentIndex];
-        if (word) AudioService.speak(word.english);
+        // DEPENDENCY: AudioService
+        if (word && services.audioService) services.audioService.speak(word.english);
     },
 
     checkAnswer(isSkip = false) {
@@ -81,6 +92,7 @@ export const QuizController = {
         if (submitBtn) submitBtn.classList.add('hidden');
         if (skipBtn) skipBtn.classList.add('hidden');
         if (input) input.disabled = true;
+        if (nextBtn) nextBtn.classList.remove('hidden'); // Show next button
 
         if (isSkip) {
             this.showFeedback(false, `跳過。答案是: ${word.english}`);
@@ -105,10 +117,12 @@ export const QuizController = {
     },
 
     speakFeedback(isCorrect, text = '') {
+        if (!services || !services.audioService) return;
+
         if (isCorrect) {
-            AudioService.speak('Correct!');
+            services.audioService.speak('Correct!');
         } else {
-            AudioService.speak(text);
+            services.audioService.speak(text);
         }
     },
 
@@ -117,7 +131,9 @@ export const QuizController = {
             AppState.currentIndex++;
             this.loadQuestion();
         } else {
-            // Maybe loop or just stop
+            // End of quiz
+            alert(`測驗結束！分數: ${AppState.quizCorrectCount} / ${AppState.activeWordList.length}`);
+            window.app.navigate('level-select-screen');
         }
     },
 
