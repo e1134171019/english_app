@@ -14,6 +14,59 @@ export const Verb3Controller = {
         AppState.verb3Stats = { correct: 0, wrong: 0 };
     },
 
+    /**
+     * 啟動動詞三態練習（Deck 模式）
+     * @param {Object} config - { words, deckId }
+     */
+    start({ words, deckId }) {
+        console.log(`[Verb3] Starting with deck: ${deckId}, ${words.length} words`);
+
+        if (!words || words.length === 0) {
+            alert('題庫無單字可供練習');
+            return;
+        }
+
+        // 過濾：只保留有三態資料的動詞
+        const verbs = words.filter(w => w.verb && w.verb.base && w.verb.past);
+
+        if (verbs.length === 0) {
+            alert('此題庫無動詞或缺少三態資料');
+            return;
+        }
+
+        if (verbs.length < words.length) {
+            console.warn(`[Verb3] Filtered: ${verbs.length}/${words.length} verbs have 三態 data`);
+        }
+
+        // 設定當前動詞列表
+        this.words = verbs;
+        this.deckId = deckId;
+        this.currentIndex = 0;
+
+        // 更新 AppState（向後兼容）
+        AppState.verb3List = verbs;
+        AppState.verb3Index = 0;
+        AppState.verb3Stats = { correct: 0, wrong: 0 };
+
+        // 顯示畫面
+        this.showScreen();
+        this.updateStatsUI();
+        this.loadQuestion();
+    },
+
+    showScreen() {
+        // Hide others
+        const conflictScreens = ['quiz-screen', 'practice-screen', 'level-select-screen'];
+        conflictScreens.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+        });
+
+        // Show self
+        const self = document.getElementById('verb3-screen');
+        if (self) { self.style.display = 'block'; self.classList.add('active'); }
+    },
+
     onEnter(params) {
         console.log('Verb3Module Enter', params);
 

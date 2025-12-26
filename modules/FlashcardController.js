@@ -12,6 +12,34 @@ export const FlashcardController = {
         services = injectedServices;
     },
 
+    /**
+     * 啟動單字練習（Deck 模式）
+     * @param {Object} config - { words, deckId }
+     */
+    start({ words, deckId }) {
+        console.log(`[Flashcard] Starting with deck: ${deckId}, ${words.length} words`);
+
+        if (!words || words.length === 0) {
+            alert('題庫無單字可供練習');
+            return;
+        }
+
+        // 設定當前單字列表（不依賴全域 activeWords）
+        this.words = words;
+        this.deckId = deckId;
+        this.currentIndex = 0;
+
+        // 更新 AppState（向後兼容）
+        AppState.practiceList = words;
+        AppState.currentIndex = 0;
+
+        // 顯示畫面
+        this.showScreen();
+
+        // 初始渲染
+        this.renderCard();
+    },
+
     onEnter(params) {
         console.log('FlashcardModule Enter', params);
 
@@ -162,12 +190,20 @@ export const FlashcardController = {
     },
 
     nextCard() {
+        console.log('[Flashcard] nextCard called');
         AppState.currentIndex++;
+        if (AppState.currentIndex >= AppState.practiceList.length) {
+            AppState.currentIndex = 0;
+        }
         this.renderCard();
     },
 
     prevCard() {
+        console.log('[Flashcard] prevCard called');
         AppState.currentIndex--;
+        if (AppState.currentIndex < 0) {
+            AppState.currentIndex = AppState.practiceList.length - 1;
+        }
         this.renderCard();
     },
 

@@ -8,14 +8,56 @@ export const QuizController = {
     name: 'quiz-screen',
 
     init(injectedServices) {
-        console.log('QuizModule Init');
+        console.log('[QuizController] Init with services:', injectedServices);
         services = injectedServices;
+        console.log('[QuizController] services.audioService:', services?.audioService);
         // Input Enter Key Listener
         const input = document.getElementById('quiz-input');
         if (input) {
             input.addEventListener('keyup', (e) => {
                 if (e.key === 'Enter') this.checkAnswer();
             });
+        }
+    },
+
+    /**
+     * 啟動聽力練習（Deck 模式）
+     * @param {Object} config - { words, deckId }
+     */
+    start({ words, deckId }) {
+        console.log(`[Quiz] Starting with deck: ${deckId}, ${words.length} words`);
+
+        if (!words || words.length === 0) {
+            alert('題庫無單字可供練習');
+            return;
+        }
+
+        // 設定當前單字列表
+        this.words = words;
+        this.deckId = deckId;
+        this.currentIndex = 0;
+
+        // 更新 AppState（向後兼容）
+        AppState.activeWordList = words;
+        AppState.currentIndex = 0;
+        AppState.quizCorrectCount = 0;
+
+        // 顯示畫面並載入第一題
+        this.showScreen();
+        this.loadQuestion();
+    },
+
+    showScreen() {
+        // Hide others
+        document.querySelectorAll('.screen').forEach(el => {
+            el.style.display = 'none';
+            el.classList.remove('active');
+        });
+
+        const el = document.getElementById('quiz-screen');
+        if (el) {
+            el.style.display = 'block';
+            el.classList.add('active');
         }
     },
 

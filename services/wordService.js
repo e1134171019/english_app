@@ -5,7 +5,7 @@
 
 import { AppState } from '../core/state.js';
 // Removed static import: import { wordsData } from '../data/wordsData.js';
-import { StorageService } from './storage.js';
+import { StorageService } from './storageService.js';
 
 // Absolute path resolution for JSON (works across all environments)
 const WORDS_JSON_URL = new URL('../data/wordsData.json', import.meta.url);

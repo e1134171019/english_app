@@ -84,6 +84,33 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ==================== */
+/* CUSTOM DECK SCREEN   */
+/* ==================== */
+
+/* 基本 Flex 設定由 .screen.active 處理，這裡只需處理特殊覆蓋 */
+#custom-training-screen.screen.active {
+    display: flex !important;
+    flex-direction: column;
+    padding: 12px 16px 12px 16px !important;
+    gap: 16px;
+    /* 確保間距存在 */
+}
+
+#custom-training-screen .card {
+    box-shadow: var(--shadow-md);
+}
+
+/* Deck card hover effect */
+.deck-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.deck-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -129,11 +156,19 @@ body::before {
 
 #main-content {
     flex: 1;
-    overflow-y: auto;
+    min-height: 0;
+    /* 關鍵：避免 flex item 自動最小高度造成怪現象 */
+    display: flex;
+    flex-direction: column;
     overflow-x: hidden;
+    /* overflow-y: auto;  <-- Remove this global scroll if individual screens handle it, but for safety let's keep it or check. 
+       Actually, if the inner card scrolls, this should probably be hidden or standard. 
+       The user said "gap: 12px" is good here too. */
     background-color: var(--bg-body);
     position: relative;
     scroll-behavior: smooth;
+    gap: 16px;
+    /* Global gap for screens that need it */
 }
 
 #main-content::-webkit-scrollbar {
@@ -211,15 +246,23 @@ body::before {
 }
 
 .icon-btn-primary {
-    background-color: var(--primary);
-    color: white;
-    box-shadow: 0 4px 6px rgba(99, 102, 241, 0.4);
+    fill: white;
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-btn-primary:hover {
+    background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px) scale(1.05);
 }
 
 .icon-btn-primary:active {
-    background-color: var(--primary-focus);
-    transform: scale(0.95);
-    box-shadow: none;
+    background: linear-gradient(135deg, #4338CA 0%, #4F46E5 100%);
+    transform: translateY(0) scale(1);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 /* ==================== */
@@ -335,13 +378,20 @@ body::before {
 
 .screen {
     display: none;
-    padding: var(--space-2);
-    min-height: 100%;
+    /* padding: var(--space-2);  <-- Move padding to active state or specific screens to avoid double padding logic */
+    min-height: 0;
+    /* Changed from 100% to 0 to avoid overflow issues in flex container */
     animation: fade-in 0.2s ease-out;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
+    /* Changed from block */
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    padding: 16px;
+    /* Apply padding here to ensure consistency */
 }
 
 #practice-screen.active {
@@ -416,6 +466,26 @@ body::before {
 .btn-text {
     background-color: transparent;
     color: var(--primary);
+    border: 2px solid var(--primary);
+    border-radius: 24px;
+    padding: 0 20px;
+    height: 44px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+
+.btn-text:hover {
+    background-color: rgba(99, 102, 241, 0.08);
+    border-color: var(--primary-focus);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-text:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
 }
 
 /* Input Fields */
@@ -584,10 +654,14 @@ body::before {
 
 .flashcard-container {
     perspective: 1000px;
-    width: 100%;
-    aspect-ratio: 3/4;
+    width: 90%;
+    /* aspect-ratio: 3/4; */
+    /* ❌ Removed to allow vh-based height */
     margin: 0 auto;
-    max-width: 340px;
+    max-width: 600px;
+    /* ✅ Increased from 340px */
+    max-height: 60vh;
+    /* ✅ Limit maximum height */
     position: relative;
     z-index: 50;
 }
@@ -608,6 +682,8 @@ body::before {
 .flashcard {
     position: relative;
     width: 100%;
+    min-height: 45vh;
+    /* ✅ Reduced from 55vh to prevent overflow */
     height: 100%;
     text-align: center;
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -798,6 +874,93 @@ body::before {
 }
 
 /* ==================== */
+/* 13. DECK CARDS       */
+/* ==================== */
+
+.deck-create-section {
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.deck-create-section h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-lg);
+    color: var(--text-main);
+}
+
+.deck-list-section h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-lg);
+    color: var(--text-main);
+}
+
+.deck-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    margin-bottom: var(--space-2);
+    transition: box-shadow 0.2s, transform 0.1s;
+}
+
+.deck-card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.deck-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-1);
+}
+
+.deck-header h4 {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.deck-meta {
+    font-size: var(--text-sm);
+    color: var(--text-sub);
+    margin-bottom: var(--space-2);
+}
+
+.deck-modes {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.deck-modes .btn {
+    flex: 1;
+    height: 40px;
+    font-size: var(--text-sm);
+    padding: 0 var(--space-1_5);
+}
+
+.btn-sm {
+    height: 36px;
+    padding: 0 var(--space-1_5);
+    font-size: var(--text-sm);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-4);
+    color: var(--text-hint);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+}
+
+/* ==================== */
+/* END                  */
+/* ==================== */
+
+/* ==================== */
 /* 13. FLOATING ELEMENTS */
 /* ==================== */
 
@@ -885,4 +1048,35 @@ body::before {
 .custom-set-actions .btn-sm {
     padding: 6px 4px;
     font-size: 0.85rem;
+}
+
+/* ==================== Floating Back Button ==================== */
+.floating-back-btn {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 999;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-back-btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.1);
+}
+
+.floating-back-btn.hidden {
+    display: none !important;
 }

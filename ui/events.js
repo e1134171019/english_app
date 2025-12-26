@@ -7,11 +7,11 @@
 import { AppState } from '../core/state.js';
 import { AppConfig } from '../core/config.js';
 import { ScreenManager } from './screens.js';
-import { AudioService } from '../services/audio.js';
+import { AudioService } from '../services/audioService.js';
 import { WordService } from '../services/wordService.js';
 import { DOMManager, TooltipManager } from './dom.js';
 import { AIService } from '../services/aiService.js';
-import { StorageService } from '../services/storage.js';
+import { StorageService } from '../services/storageService.js';
 
 export const EventManager = {
     /**

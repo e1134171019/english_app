@@ -5,7 +5,7 @@
 
 import { AppState } from '../core/state.js';
 import { WordService } from '../services/wordService.js';
-import { AudioService } from '../services/audio.js';
+import { AudioService } from '../services/audioService.js';
 import { DOMManager } from './dom.js';
 
 export const ScreenManager = {

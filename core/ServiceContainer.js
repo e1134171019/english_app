@@ -1,3 +1,4 @@
+import { DeckService } from '../services/DeckService.js';
 /**
  * ServiceContainer - Dependency Injection Container
  * 
@@ -10,6 +11,26 @@
  * const service = container.get('myService'); // 單例
  */
 export class ServiceContainer {
+    /**
+     * 創建所有預設服務
+     * @static
+     */
+    static createDefault() {
+        const container = new ServiceContainer();
+
+        // 註冊各項服務（注意依賴順序）
+        container.register('wordService', () => WordService);
+        container.register('storageService', () => StorageService);
+        container.register('audioService', () => AudioService);
+        container.register('aiService', () => AIService);
+        container.register('deckService', (c) => new DeckService(
+            c.get('storageService'),
+            c.get('wordService')
+        ));
+
+        return container;
+    }
+
     constructor() {
         this.services = new Map();
     }

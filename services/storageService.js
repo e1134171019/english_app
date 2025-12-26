@@ -140,5 +140,64 @@ export const StorageService = {
         let sets = this.loadCustomSets();
         sets = sets.filter(s => s.id !== id);
         this.saveCustomSets(sets);
+    },
+
+    // ==================== Deck Management ====================
+
+    /**
+     * 儲存題庫
+     * @param {Object} deck - Deck 物件
+     */
+    saveDeck(deck) {
+        const decks = this.getAllDecks();
+
+        // 檢查是否已存在（更新）
+        const existingIndex = decks.findIndex(d => d.id === deck.id);
+        if (existingIndex >= 0) {
+            decks[existingIndex] = deck;
+        } else {
+            decks.push(deck);
+        }
+
+        localStorage.setItem('custom_decks', JSON.stringify(decks));
+        console.log(`[Storage] Deck saved: ${deck.id}`);
+    },
+
+    /**
+     * 取得單一題庫
+     * @param {string} deckId
+     * @returns {Object|null}
+     */
+    getDeck(deckId) {
+        const decks = this.getAllDecks();
+        return decks.find(d => d.id === deckId) || null;
+    },
+
+    /**
+     * 取得所有自訂題庫
+     * @returns {Array}
+     */
+    getAllDecks() {
+        const saved = localStorage.getItem('custom_decks');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to parse decks:', e);
+                return [];
+            }
+        }
+        return [];
+    },
+
+    /**
+     * 刪除題庫
+     * @param {string} deckId
+     */
+    deleteDeck(deckId) {
+        let decks = this.getAllDecks();
+        decks = decks.filter(d => d.id !== deckId);
+        localStorage.setItem('custom_decks', JSON.stringify(decks));
+        console.log(`[Storage] Deck deleted: ${deckId}`);
     }
 };

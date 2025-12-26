@@ -57,22 +57,160 @@
 
 ## 📂 檔案結構
 ```text
-/web
-├── new_index.html       # 應用程式主入口 (Single Page Application)
-├── style.css            # 全域樣式與 RWD 設計
-├── main.js              # 核心邏輯控制器 (Controller)
-├── /data
-│   ├── wordsData.js     # 核心單字庫
-│   └── verb3Data.js     # 動詞三態資料庫
-├── /services
-│   ├── audio.js         # TTS語音服務
-│   ├── storage.js       # 資料存取服務
-│   └── wordService.js   # 單字處理邏輯
-└── /core
-    ├── config.js        # 全域設定
-    └── state.js         # 狀態管理
+d:\English_app\
+│
+├── 📄 主要文件
+│   ├── new_index.html       # 應用程式主入口 (Single Page Application)
+│   ├── main.js              # 核心邏輯控制器與路由器
+│   ├── package.json         # NPM 專案配置
+│   ├── package-lock.json    # NPM 鎖定文件
+│   ├── vitest.config.js     # 單元測試配置
+│   └── web.code-workspace   # VS Code 工作區設定
+│
+├── 📚 文檔
+│   ├── README.md            # 專案說明（本文件）
+│   ├── README_DEV.md        # 開發者技術文檔
+│   └── 使用流程_v2.md       # 使用者操作手冊
+│
+├── 🎨 樣式
+│   └── styles/
+│       └── app.css          # 主樣式表（CSS Variables + RWD）
+│
+├── 🎮 功能模組
+│   └── modules/
+│       ├── FlashcardController.js   # 單字練習控制器
+│       ├── QuizController.js        # 聽力測驗控制器
+│       ├── Verb3Controller.js       # 動詞三態控制器
+│       └── CustomController.js      # 自訂題庫控制器
+│
+├── ⚙️ 服務層
+│   └── services/
+│       ├── audioService.js          # TTS 語音服務
+│       ├── storageService.js        # LocalStorage 資料持久化
+│       ├── wordService.js           # 單字處理與篩選
+│       ├── DeckService.js           # 自訂題庫 CRUD
+│       ├── aiService.js             # AI 翻譯服務
+│       └── ServiceContainer.js      # 依賴注入容器
+│
+├── 🧭 路由
+│   └── router/
+│       └── startMode.js             # 模式啟動與導航邏輯
+│
+├── 🔧 核心
+│   └── core/
+│       ├── state.js                 # 全域狀態管理
+│       ├── config.js                # 應用配置常量
+│       └── ServiceContainer.js      # 服務容器實例
+│
+├── 🎨 UI 組件
+│   └── ui/
+│       ├── dom.js                   # DOM 操作工具
+│       ├── TooltipManager.js        # 翻譯提示彈窗
+│       └── screens.js               # 畫面管理器
+│
+├── 📊 資料
+│   └── data/
+│       ├── wordsData.js             # 核心單字庫（8,656 字）
+│       ├── wordsData.json           # JSON 格式單字庫
+│       └── verb3Data.js             # 動詞三態資料
+│
+├── 🧪 測試
+│   └── tests/
+│       ├── setup.js                 # Vitest 測試環境設定
+│       ├── setupFetch.js            # Fetch API Mock
+│       ├── unit/                    # 單元測試
+│       │   ├── wordService.test.js
+│       │   ├── wordService.token.test.js
+│       │   ├── tooltipManager.test.js
+│       │   └── tooltipManager.timeout.test.js
+│       └── fixtures/                # 測試資料
+│           └── testWords.json
+│
+├── 📋 規劃文檔
+│   └── idea/
+│       └── TESTING.md               # 測試完整指南
+│
+├── 🐍 Python 工具
+│   ├── convert_excel_to_js.py       # Excel 轉 JSON 工具
+│   ├── api_server.py                # AI API 服務器（可選）
+│   ├── requirements.txt             # Python 依賴
+│   └── ENGLISH_10000_LEVELED.xlsx   # 原始單字庫 Excel
+│
+├── 🔧 配置
+│   ├── .gitignore                   # Git 忽略規則
+│   └── .git/                        # Git 版本控制
+│
+└── 📦 依賴
+    └── node_modules/                # NPM 套件（自動生成）
 ```
+
+### 目錄說明
+
+#### 核心目錄（必需）
+- **modules/**：功能模組，每個 Controller 對應一個功能畫面
+- **services/**：服務層，提供共用的業務邏輯
+- **core/**：核心配置與狀態管理
+- **data/**：單字資料庫
+
+#### UI 與路由
+- **ui/**：UI 工具與組件
+- **router/**：路由與模式切換邏輯
+- **styles/**：CSS 樣式表
+
+#### 功能特色
+
+- **多等級單字庫**：國中、高中、進階單字，共 8656 個單字
+- **多種練習模式**：
+  - 單字卡片（FlashCard）
+  - 發音測驗（Quiz）
+  - 動詞三態（Verb3）
+  - 自訂題庫（Custom Deck）
+- **智能互動**：
+  - 點擊例句中的藍色單字顯示中文翻譯（黑底浮窗）
+  - 單字發音（Text-to-Speech）
+  - AI 生成例句（本地模型）
+- **美化 UI**：
+  - Toast 通知系統（漸層色彩、中央顯示）
+  - 響應式設計（RWD）
+  - Material Design 風格
+- **自訂題庫**：輸入單字建立個人化題庫
+- **總單字數**：8,656 個
 
 ---
 
-*文件最後更新時間：2025-12-14*
+#### 開發與測試
+- **tests/**：單元測試（Vitest）
+- **idea/**：規劃與測試文檔
+
+#### 輔助工具
+- **Python 工具**：資料轉換與 AI 服務
+- **配置文件**：專案設定
+
+### 檔案統計
+- **JavaScript 文件**：~25 個
+- **測試文件**：6 個
+- **文檔文件**：4 個
+- **總單字數**：8,656 個
+
+---
+
+## 📝 更新日誌 (Changelog)
+
+### 2025-12-27 - UI 優化與布局改進
+- **單字練習模式**：
+  - ✅ 調整 Flashcard 高度為 45vh，解決卡片過小或溢出問題
+  - ✅ 移除固定 aspect-ratio 限制，採用響應式高度設計
+  - ✅ 優化垂直間距，實現上下邊界平衡置中
+  - ✅ 字體放大至 4rem，提升可讀性
+  
+- **控制按鈕美化**：
+  - ✅ 左右箭頭按鈕：漸層背景、立體陰影、hover 動畫效果
+  - ✅ 自動播放按鈕：圓角邊框、柔和陰影、smooth transitions
+  - ✅ 按鈕尺寸優化（52px）與間距調整（40px）
+  
+- **自訂題庫**：
+  - ✅ 重構為水平單行佈局（題庫資訊 + 操作按鈕）
+  - ✅ 修復 deckId 讀取邏輯錯誤
+  - ✅ 動態渲染對應模式按鈕（單字練習/聽力練習/動詞三態）
+
+*文件最後更新時間：2025-12-27*

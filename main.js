@@ -8,19 +8,21 @@
 import { AppState } from './core/state.js';
 import { ServiceContainer } from './core/ServiceContainer.js';
 import { WordService } from './services/wordService.js?v=20251216_FINAL';
-import { StorageService } from './services/storage.js?v=20251216_FINAL';
-import { AudioService } from './services/audio.js?v=20251216_FINAL';
+import { StorageService } from './services/storageService.js?v=20251216_DECK';
+import { AudioService } from './services/audioService.js?v=20251216_FINAL';
 import { AIService } from './services/AIService.js?v=20251216_LOCAL';
+import { DeckService } from './services/DeckService.js';
 
 // Feature Modules (Controller Layer) with Cache Busting
 import { FlashcardController } from './modules/FlashcardController.js?v=20251216_FINAL';
 import { QuizController } from './modules/QuizController.js?v=20251216_FINAL';
 import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
-import { CustomController } from './modules/CustomController.js?v=20251216_FINAL';
+import { CustomController } from './modules/CustomController.js?v=20251227_HORIZONTAL_LAYOUT_V2';
 
 // Refactored UI System
-import { EventCoordinator } from './web/ui/EventCoordinator.js';
-import { TooltipManager } from './web/ui/TooltipManager.js';
+// import { TooltipManager } from './ui/TooltipManager.js'; // TEMP: Removed - file missing
+import { Toast } from './ui/toast.js';
+import { SimpleTooltip } from './ui/simpleTooltip.js';
 
 const App = {
   container: null,
@@ -39,15 +41,26 @@ const App = {
     this.container.register('storageService', () => StorageService);
     this.container.register('audioService', () => AudioService);
     this.container.register('aiService', () => AIService);
+    this.container.register('deckService', (c) => {
+      console.log('[App] Creating DeckService with:', {
+        storage: c.get('storageService'),
+        wordService: c.get('wordService')
+      });
+      return new DeckService(
+        c.get('storageService'),
+        c.get('wordService')
+      );
+    });
 
     // 3. Register UI Components
     // EventCoordinator removed - using data-action pattern instead
+    // TooltipManager removed - file missing, functionality disabled
 
-    this.container.register('tooltipManager', (c) => new TooltipManager({
-      wordService: c.get('wordService'),
-      audioService: c.get('audioService'),
-      aiService: c.get('aiService')
-    }));
+    // this.container.register('tooltipManager', (c) => new TooltipManager({
+    //   wordService: c.get('wordService'),
+    //   audioService: c.get('audioService'),
+    //   aiService: c.get('aiService')
+    // }));
 
     console.log('[App] ✓ Services registered:', this.container.list().join(', '));
 
@@ -72,18 +85,19 @@ const App = {
     }
 
     // 5. Initialize UI Components
-    this.tooltipManager = this.container.get('tooltipManager');
-    try {
-      this.tooltipManager.init();
-    } catch (error) {
-      console.error('[App] TooltipManager init failed:', error);
-    }
+    // TooltipManager disabled - file missing
+    // this.tooltipManager = this.container.get('tooltipManager');
+    // try {
+    //   this.tooltipManager.init();
+    // } catch (error) {
+    //   console.error('[App] TooltipManager init failed:', error);
+    // }
 
     // 7. Setup event handling (data-action pattern)
     this._registerEvents();
 
     // 8. Setup navigation and level selection
-    this.updateStats();
+    // this.updateStats(); // REMOVED: Method doesn't exist, was crashing init
     this.setupNavigation();
     this.setupLevelSelect();
 
@@ -94,23 +108,29 @@ const App = {
       wordService: this.container.get('wordService'),
       audioService: this.container.get('audioService')
     });
+    this.container.register('flashcardController', () => FlashcardController);
 
     // Quiz: Needs audioService
     QuizController.init({
       audioService: this.container.get('audioService')
     });
+    this.container.register('quizController', () => QuizController);
 
     // Verb3: Needs wordService, audioService
     Verb3Controller.init({
       wordService: this.container.get('wordService'),
       audioService: this.container.get('audioService')
     });
+    this.container.register('verb3Controller', () => Verb3Controller);
 
-    // Custom: Needs wordService, storageService
+    // Custom: Needs wordService, storageService, deckService
     CustomController.init({
       wordService: this.container.get('wordService'),
-      storageService: this.container.get('storageService')
+      storageService: this.container.get('storageService'),
+      deckService: this.container.get('deckService'),
+      container: this.container
     });
+    this.container.register('customController', () => CustomController);
 
     // 7. Show initial screen
     this.navigate('home-screen');
@@ -142,13 +162,29 @@ const App = {
       return;
     }
 
-    // Priority 2: Interactive Word (Tooltip)
+    // Priority 2: Interactive Word (With Translation Tooltip)
     const token = e.target.closest('.interactive-word');
     if (token) {
       e.stopPropagation();
       const word = token.dataset.word || token.textContent.trim();
-      const tm = this.container.get('tooltipManager');
-      tm.show(word, { x: e.clientX, y: e.clientY });
+
+      // 播放發音
+      const audioService = this.container.get('audioService');
+      if (audioService?.speak) {
+        audioService.speak(word);
+      }
+
+      // 顯示翻譯浮窗
+      const wordService = this.container.get('wordService');
+      // 使用 searchWords 查詢單字資料
+      const searchResult = wordService?.searchWords([word]);
+      const wordData = searchResult?.validWords?.[0];
+
+      SimpleTooltip.show(word, {
+        x: e.clientX,
+        y: e.clientY
+      }, wordData);
+
       return;
     }
 
@@ -171,6 +207,8 @@ const App = {
    * @private
    */
   _dispatchAction(action, el, e) {
+    // 所有 action 統一處理，不再跳過任何事件
+
     const actions = {
       // Level selection
       'confirm-level': () => this.confirmLevelSelection(),
@@ -210,8 +248,16 @@ const App = {
       // Practice screen
       'speak-word': () => this.speakCurrentWord(),
       'speak-example': () => this.speakExample(),
-      'prev-card': () => this.prevCard(),
-      'next-card': () => this.nextCard(),
+      'prev-card': () => {
+        if (this.currentModule && this.currentModule.prevCard) {
+          this.currentModule.prevCard();
+        }
+      },
+      'next-card': () => {
+        if (this.currentModule && this.currentModule.nextCard) {
+          this.currentModule.nextCard();
+        }
+      },
       'toggle-autoplay': () => this.toggleAutoPlay(),
 
       // Quiz screen
@@ -229,6 +275,43 @@ const App = {
 
       // Custom screen
       'process-custom': () => this.processCustomWords(),
+      'create-and-start': () => {
+        // 從事件目標取得 mode
+        const mode = el.dataset.mode;
+        console.log(`[App] create-and-start: ${mode}`);
+        const CustomController = this.currentModule;
+        if (CustomController && CustomController.handleCreateAndStart) {
+          CustomController.handleCreateAndStart(mode);
+        }
+      },
+      'delete-deck': () => {
+        console.log('[App] delete-deck action');
+        const CustomController = this.currentModule;
+        if (CustomController && CustomController.handleDeleteDeck) {
+          CustomController.handleDeleteDeck(el);
+        }
+      },
+      'start-custom-practice': () => {
+        console.log('[App] start-custom-practice');
+        const CustomController = this.currentModule;
+        if (CustomController && CustomController.handleStartMode) {
+          CustomController.handleStartMode(el, 'start-custom-practice');
+        }
+      },
+      'start-custom-quiz': () => {
+        console.log('[App] start-custom-quiz');
+        const CustomController = this.currentModule;
+        if (CustomController && CustomController.handleStartMode) {
+          CustomController.handleStartMode(el, 'start-custom-quiz');
+        }
+      },
+      'start-custom-verb3': () => {
+        console.log('[App] start-custom-verb3');
+        const CustomController = this.currentModule;
+        if (CustomController && CustomController.handleStartMode) {
+          CustomController.handleStartMode(el, 'start-custom-verb3');
+        }
+      },
       'play-custom-set': () => {
         const setId = el.dataset.setId;
         if (setId) {
@@ -255,6 +338,7 @@ const App = {
       },
 
       // Global
+      'back': () => this.goBack(),
       'go-back': () => this.goBack()
     };
 
@@ -267,7 +351,38 @@ const App = {
     }
   },
 
-  updateStats() {
+  navigate(screenId, params = {}) {
+    console.log(`[Router] Navigating to ${screenId}`, params);
+
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(s => {
+      s.style.display = 'none';
+      s.classList.remove('active');
+    });
+
+    // Show target screen
+    const screen = document.getElementById(screenId);
+    if (screen) {
+      screen.style.display = 'block';
+      screen.classList.add('active');
+    }
+
+    // Show/hide floating back button
+    const backBtn = document.getElementById('floating-back-btn');
+    if (backBtn) {
+      const showBackFor = ['practice-screen', 'quiz-screen', 'verb3-screen'];
+      if (showBackFor.includes(screenId)) {
+        backBtn.classList.remove('hidden');
+      } else {
+        backBtn.classList.add('hidden');
+      }
+    }
+
+    // Module-specific logic
+    this._loadModuleForScreen(screenId, params);
+  },
+
+  _loadModuleForScreen(screenId, params) {
     // Keep lightweight stats logic here or move to a DashboardModule.
     // For now, logging counts is fine.
     // const counts = WordService.getWordCounts();
@@ -345,14 +460,29 @@ const App = {
   goBack() {
     AudioService.cancelSpeech();
 
-    // If in a Module, maybe let module handle back? 
-    // Or standard hierarchy.
     const currentScreen = document.querySelector('.screen.active')?.id;
+    console.log(`[App] goBack from: ${currentScreen}`);
 
+    // 簡化的分層返回邏輯
     if (currentScreen === 'practice-screen' || currentScreen === 'quiz-screen') {
+      // 練習/測驗畫面 → 返回等級選擇
       this.navigate('level-select-screen');
+    } else if (currentScreen === 'level-select-screen') {
+      // 等級選擇 → 檢查是否在 Tier 2
+      const tier1Active = document.querySelector('#tier1-chips .chip.active');
+      const tier2Container = document.getElementById('tier2-chips');
+      const hasTier2 = tier2Container && tier2Container.children.length > 0;
+
+      if (tier1Active && hasTier2) {
+        // Tier 2 → 返回 Tier 1
+        document.querySelectorAll('#tier1-chips .chip').forEach(c => c.classList.remove('active'));
+        tier2Container.innerHTML = '<div style="padding: 20px; color: var(--text-hint); text-align: center; width: 100%;">請先選擇學制</div>';
+      } else {
+        // Tier 1 → 返回主畫面
+        this.navigate('home-screen');
+      }
     } else {
-      // Level Select, Verb3, Custom -> Home
+      // 其他畫面 → 返回主畫面
       this.navigate('home-screen');
     }
   },

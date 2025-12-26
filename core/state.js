@@ -4,10 +4,30 @@
  */
 
 export const AppState = {
+    // ==================== 狀態分離 ====================
+    // 封面三大模式狀態（不受自訂模式影響）
+    main: {
+        selectedMode: 'practice',  // practice / quiz / verb3
+        selectedLevel: {
+            tier1: '',  // JH / SH / Advanced
+            tier2: ''   // J1, J2, J3, S1, S2, S3
+        }
+    },
+
+    // 我的專屬模式狀態（不受封面影響）
+    custom: {
+        selectedMode: 'practice'  // practice / quiz / verb3
+    },
+
+    // Deck 上下文
+    currentDeckId: null,      // 當前使用的題庫 ID
+    currentWords: [],         // 當前題庫的單字（統一來源）
+
+    // ==================== 原有狀態（向後兼容）====================
     // 單字資料
     userWords: [],
     blockedWords: [],
-    activeWordList: [],
+    activeWordList: [],  // 保留以兼容現有代碼
 
     // 當前狀態
     currentMode: 'home',

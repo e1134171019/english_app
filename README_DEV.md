@@ -7,10 +7,14 @@
 本專案採用 **模組化 (Modular)** 與 **單頁應用 (SPA)** 架構。
 
 ### 核心結構
-*   **Core (核心層)**: 管理全域狀態 (`state.js`) 與設定 (`config.js`)。
-*   **Services (服務層)**: 提供共用功能，如資料處理 (`wordService.js`)、音訊 (`audio.js`)、儲存 (`storage.js`)。
-*   **Modules (模組層)**: 每個功能畫面獨立為一個 Controller (如 `QuizController.js`)。
-*   **Main (入口)**: `main.js` 作為中央路由器 (Router) 與事件分發器 (Delegate)。
+*   **Core (核心層)**: 管理全域狀態 (`state.js`)、設定 (`config.js`) 與依賴注入容器 (`ServiceContainer.js`)。
+*   **Services (服務層)**: 提供共用功能，如資料處理 (`wordService.js`)、音訊 (`audioService.js`)、儲存 (`storageService.js`)、題庫管理 (`DeckService.js`)、AI 翻譯 (`aiService.js`)。
+*   **Modules (模組層)**: 每個功能畫面獨立為一個 Controller：
+    *   `FlashcardController.js` - 單字練習
+    *   `QuizController.js` - 聽力測驗
+    *   `Verb3Controller.js` - 動詞三態
+    *   `CustomController.js` - 自訂題庫管理
+*   **Main (入口)**: `main.js` 作為中央路由器 (Router) 與事件分發器 (Event Delegation)。
 
 ---
 
@@ -71,7 +75,7 @@
 
 ## 4. CSS 設計系統 (Design System)
 
-樣式表 (`style.css`) 採用 CSS Variables (變數) 進行統一管理，確保視覺一致性。
+樣式表 (`styles/app.css`) 採用 CSS Variables (變數) 進行統一管理，確保視覺一致性。
 
 ### 核心變數
 ```css
@@ -83,7 +87,14 @@
   --text-main: #1F2937;     /* 主要文字 */
 }
 ```
+## UI 系統
 
+### UI 組件
+- **screens.js**: 畫面管理器，負責畫面切換
+- **dom.js**: DOM 元素管理
+- **events.js**: 全域事件處理（已整合到 main.js）
+- **toast.js**: 美化的通知系統（替代 alert/confirm）⭐ 新增
+- **simpleTooltip.js**: 單字翻譯浮窗（黑底白字）⭐ 新增
 ### 佈局策略
 *   **`.screen`**: 所有功能畫面預設 `display: none`。
 *   **`.screen.active`**: 透過 JS 添加 `active` 類別來顯示特定畫面 (`display: block/flex`)。
@@ -113,6 +124,77 @@
     *   檢查機制：輸入框 (Input) 與資料庫 `word.verb.past` 比對。
     *   **視覺回饋**: 動態添加 `.success` (綠) 或 `.error` (紅) CSS class 至輸入框。
 
+### 自訂題庫 (Custom Deck Mode)
+*   **功能**：
+    *   允許使用者輸入自訂單字列表
+    *   選擇練習模式（單字練習 / 聽力 / 動詞三態）
+    *   題庫 CRUD 管理（建立、讀取、刪除）
+*   **資料儲存**：使用 LocalStorage 持久化
+*   **驗證機制**：透過 `WordService` 驗證單字是否存在於資料庫
+
+---
+
+## 6. 依賴注入 (ServiceContainer)
+
+採用 Singleton 模式管理所有服務，確保：
+
+```javascript
+// ServiceContainer.js
+class ServiceContainer {
+    constructor() {
+        this.services = new Map();
+    }
+    
+    register(name, serviceClass, options) {
+        // 註冊服務
+    }
+    
+    get(name) {
+        // 取得服務單例
+    }
+}
+```
+
+**優點**：
+*   服務只初始化一次（Singleton）
+*   Controller 透過容器取得服務（Dependency Injection）
+*   易於測試與替換實作
+*   避免循環依賴
+
+---
+
+## 7. 事件處理機制
+
+採用**事件委派 (Event Delegation)** 模式：
+
+### 全局事件處理
+*   `main.js` 註冊全局點擊監聽器
+*   根據 `data-action` 屬性分發事件
+*   各 Controller 透過 `window.app.currentModule` 接收委派
+
+### Controller 事件委派
+*   各 Controller 在自己的畫面內使用事件委派
+*   使用 `addEventListener` 在父元素上監聽
+*   透過 `event.target.closest()` 識別目標元素
+
+**範例**：
+```javascript
+// CustomController.js
+registerEventHandlers() {
+    this.container.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        
+        const action = target.dataset.action;
+        if (action === 'delete-deck') {
+            this.handleDeleteDeck(target);
+        }
+    }, true);
+}
+```
+
 ---
 
 這份文件旨在協助開發者快速理解系統脈絡，進行維護或擴充功能。
+
+**最後更新**：2025-12-26
