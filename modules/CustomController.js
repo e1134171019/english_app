@@ -4,7 +4,7 @@
  */
 
 import { AppState } from '../core/state.js';
-import { startCustomMode } from '../router/startMode.js';
+import { startCustomMode } from '../router/startMode.js?v=20251227_nav_fix3';
 
 let services = null;
 

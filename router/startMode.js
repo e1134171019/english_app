@@ -25,6 +25,8 @@ export function startMode({ mode, deckId, container }) {
     AppState.currentDeckId = deckId;
     AppState.currentWords = words;
     AppState.activeWordList = words; // 向後兼容
+    // Track source for proper back navigation
+    AppState.currentSource = deckId.startsWith('custom:') ? 'custom' : 'system';
 
     // 4. 路由到對應 Controller
     const controllerMap = {

@@ -739,6 +739,10 @@ body::before {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    min-height: 0;
+    /* Allow flex shrinking */
+    flex: 1;
+    /* Take available space */
 }
 
 #quiz-full-info {

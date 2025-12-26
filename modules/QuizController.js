@@ -56,7 +56,7 @@ export const QuizController = {
 
         const el = document.getElementById('quiz-screen');
         if (el) {
-            el.style.display = 'block';
+            el.style.display = 'flex';
             el.classList.add('active');
         }
     },
@@ -172,11 +172,8 @@ export const QuizController = {
         if (AppState.currentIndex < AppState.activeWordList.length - 1) {
             AppState.currentIndex++;
             this.loadQuestion();
-        } else {
-            // End of quiz
-            alert(`測驗結束！分數: ${AppState.quizCorrectCount} / ${AppState.activeWordList.length}`);
-            window.app.navigate('level-select-screen');
         }
+        // When at last question: do nothing
     },
 
     prevQuestion() {

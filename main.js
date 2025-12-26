@@ -15,9 +15,9 @@ import { DeckService } from './services/DeckService.js';
 
 // Feature Modules (Controller Layer) with Cache Busting
 import { FlashcardController } from './modules/FlashcardController.js?v=20251216_FINAL';
-import { QuizController } from './modules/QuizController.js?v=20251216_FINAL';
+import { QuizController } from './modules/QuizController.js?v=20251227_no_action_at_end';
 import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
-import { CustomController } from './modules/CustomController.js?v=20251227_HORIZONTAL_LAYOUT_V2';
+import { CustomController } from './modules/CustomController.js?v=20251227_startmode_fix';
 
 // Refactored UI System
 // import { TooltipManager } from './ui/TooltipManager.js'; // TEMP: Removed - file missing
@@ -461,7 +461,14 @@ const App = {
     AudioService.cancelSpeech();
 
     const currentScreen = document.querySelector('.screen.active')?.id;
-    console.log(`[App] goBack from: ${currentScreen}`);
+    console.log(`[App] goBack from: ${currentScreen}, source: ${AppState.currentSource}`);
+
+    // Check if coming from custom training mode
+    if (AppState.currentSource === 'custom') {
+      this.navigate('custom-training-screen');
+      AppState.currentSource = null;
+      return;
+    }
 
     // 簡化的分層返回邏輯
     if (currentScreen === 'practice-screen' || currentScreen === 'quiz-screen') {

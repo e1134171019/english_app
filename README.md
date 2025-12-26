@@ -213,4 +213,17 @@ d:\English_app\
   - ✅ 修復 deckId 讀取邏輯錯誤
   - ✅ 動態渲染對應模式按鈕（單字練習/聽力練習/動詞三態）
 
+### 2025-12-27 (晚) - 導航與 Quiz 修復
+- **自訂題庫返回導航**：
+  - ✅ 修復從「我的專屬」啟動練習後返回鍵跳轉錯誤
+  - ✅ 新增 `AppState.currentSource` 追蹤來源（custom/system）
+  - ✅ 修正 `startMode.js` 的 deckId 格式檢查（`custom:` 而非 `custom-`）
+  - ✅ 實施完整的 ES Module 版本控制鏈（防止瀏覽器快取）
+
+- **Quiz 聽力練習**：
+  - ✅ 修復垂直居中失效（`display: block` 改為 `display: flex`）
+  - ✅ Quiz 內容現在正確置中顯示
+  - ✅ 修正 Quiz 結束導航邏輯（根據 `currentSource` 返回正確畫面）
+  - ✅ 最後一題點擊「下一題」改為無動作（移除 alert 和跳轉）
+
 *文件最後更新時間：2025-12-27*
