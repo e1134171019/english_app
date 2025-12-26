@@ -1,7 +1,3 @@
-# 環境變數和敏感資訊
-.env
-*.env
-
 # Python
 __pycache__/
 *.py[cod]
@@ -11,11 +7,15 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv
+*.egg
 *.egg-info/
 dist/
 build/
+*.pyc
+*.pyo
 
-# Node.js
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -30,28 +30,36 @@ package-lock.json
 *~
 .DS_Store
 
-# 備份檔案
-*.bak
-*.backup
-*_backup.*
-*_old.*
-*_broken.*
-*_fixed.*
-*_restored.*
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.vitest/
 
-# 測試檔案
-*_test.*
-test_*.py
-test_*.js
+# Environment
+.env
+.env.local
+.env.*.local
 
-# 日誌檔案
+# Logs
+logs/
 *.log
 
-# 作業系統
+# OS
 Thumbs.db
-desktop.ini
+.DS_Store
 
-# 臨時檔案
+# Temporary files
 *.tmp
 *.temp
-~$*
+.cache/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
