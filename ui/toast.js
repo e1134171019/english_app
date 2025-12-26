@@ -25,6 +25,13 @@ export const Toast = {
     },
 
     /**
+     * 顯示警告訊息
+     */
+    warning(message, duration = 4000) {
+        this._show(message, 'warning', duration);
+    },
+
+    /**
      * 顯示確認對話框
      */
     confirm(message, onConfirm, onCancel) {
@@ -120,7 +127,8 @@ export const Toast = {
         const icons = {
             success: '✓',
             error: '✕',
-            info: 'ℹ'
+            info: 'ℹ',
+            warning: '⚠'
         };
         return icons[type] || icons.info;
     }

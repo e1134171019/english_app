@@ -93,6 +93,55 @@ export const CustomController = {
     },
 
     /**
+     * 檢查單字是否為動詞
+     * @param {Object} word - 單字物件
+     * @returns {boolean} - 是否為動詞
+     */
+    isVerb(word) {
+        if (!word || !word.pos) return false;
+        const pos = word.pos.toLowerCase();
+        // Check for verb indicators: vt., vi., v.
+        return pos.includes('vt.') || pos.includes('vi.') || pos.includes('v.');
+    },
+
+    /**
+     * 過濾出動詞，並返回被排除的非動詞列表
+     * @param {Array} words - 單字陣列
+     * @returns {Object} - { verbs: [], rejected: [{word, reason}] }
+     */
+    filterVerbs(words) {
+        const verbs = [];
+        const rejected = [];
+
+        for (const word of words) {
+            if (this.isVerb(word)) {
+                verbs.push(word);
+            } else {
+                // Determine word type for clear error message
+                let wordType = '未知類型';
+                if (word.pos) {
+                    const pos = word.pos.toLowerCase();
+                    if (pos.includes('n.')) wordType = '名詞';
+                    else if (pos.includes('adj.')) wordType = '形容詞';
+                    else if (pos.includes('adv.')) wordType = '副詞';
+                    else if (pos.includes('prep.')) wordType = '介系詞';
+                    else if (pos.includes('conj.')) wordType = '連接詞';
+                    else if (pos.includes('pron.')) wordType = '代名詞';
+                    else if (pos.includes('art.')) wordType = '冠詞';
+                    else if (pos.includes('interj.')) wordType = '感嘆詞';
+                }
+                rejected.push({
+                    word: word.english,
+                    wordType: wordType,
+                    reason: `${word.english} 是${wordType}，不是動詞`
+                });
+            }
+        }
+
+        return { verbs, rejected };
+    },
+
+    /**
  * 建立題庫（只建立，不啟動）
  */
     handleCreateAndStart(mode) {
@@ -116,24 +165,47 @@ export const CustomController = {
             const result = deckService.createDeck(autoName, text);
             const deck = result.deck || result;
             const invalidWords = result.invalidWords || [];
+            let wordList = deck.wordList || [];
+
+            // ✅ NEW: Verb3 mode validation - filter for verbs only
+            if (mode === 'verb3') {
+                const { verbs, rejected } = this.filterVerbs(wordList);
+
+                // If no verbs found, show error and don't create deck
+                if (verbs.length === 0) {
+                    Toast.error('沒有找到任何動詞！\n\n動詞三態練習需要動詞。');
+                    return;
+                }
+
+                // If some non-verbs were filtered out, show warning
+                if (rejected.length > 0) {
+                    const rejectedList = rejected.slice(0, 5).map(r => r.reason).join('\n');
+                    const moreCount = rejected.length > 5 ? `\n... 及其他 ${rejected.length - 5} 個單字` : '';
+                    Toast.warning(`以下單字不是動詞，已排除：\n\n${rejectedList}${moreCount}`);
+                }
+
+                // Update wordList with verbs only
+                wordList = verbs;
+                deck.wordList = verbs;
+            }
 
             // ✅ 儲存用戶選擇的模式（用於列表顯示）
             deck.selectedMode = mode;
             services.storageService.saveDeck(deck);
 
             // 使用正確的屬性名稱
-            const wordCount = deck.wordList ? deck.wordList.length : (deck.meta?.validCount || 0);
+            const wordCount = wordList.length;
             console.log(`[CustomController] Created deck: ${deck.id}, ${wordCount} words`);
 
             // 清空輸入
             if (inputEl) inputEl.value = '';
 
             // 顯示成功訊息
-            const validCount = deck.meta?.validCount || wordCount;
-            const invalidCount = invalidWords.length || deck.meta?.invalidCount || 0;
+            const validCount = wordCount;
+            const totalInvalid = invalidWords.length + (mode === 'verb3' && rejected ? rejected.length : 0);
             let message = `✓ 題庫建立成功！\n「${autoName}」- ${validCount} 個單字`;
-            if (invalidCount > 0) {
-                message += `\n（${invalidCount} 個無效單字已略過）`;
+            if (totalInvalid > 0) {
+                message += `\n（${totalInvalid} 個無效單字已略過）`;
             }
             Toast.success(message);
 

@@ -17,7 +17,7 @@ import { DeckService } from './services/DeckService.js';
 import { FlashcardController } from './modules/FlashcardController.js?v=20251216_FINAL';
 import { QuizController } from './modules/QuizController.js?v=20251227_no_action_at_end';
 import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
-import { CustomController } from './modules/CustomController.js?v=20251227_startmode_fix';
+import { CustomController } from './modules/CustomController.js?v=20251227_verb3_validation';
 
 // Refactored UI System
 // import { TooltipManager } from './ui/TooltipManager.js'; // TEMP: Removed - file missing

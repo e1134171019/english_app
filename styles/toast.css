@@ -67,6 +67,11 @@
     color: white;
 }
 
+.custom-toast-warning .custom-toast-icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
 /* ===========================
    Custom Modal 確認對話框
    =========================== */
