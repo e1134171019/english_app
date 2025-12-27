@@ -1029,6 +1029,25 @@ body::before {
     /* Increase gap for better spacing */
 }
 
+/* CRITICAL FIX: Prevent inactive face from blocking clicks
+   Both faces are position:absolute at same coordinates.
+   Even when rotated 180deg, the FRONT face (defined first in DOM)
+   still intercepts pointer events, blocking interactive words on BACK.
+   Solution: Disable pointer-events on the face that's turned away. */
+
+/* When NOT flipped: disable back face pointer events */
+.flashcard:not(.flipped) .card-face.back {
+    pointer-events: none;
+    visibility: hidden;
+    /* Extra safety: completely remove from render tree */
+}
+
+/* When flipped: disable front face pointer events */
+.flashcard.flipped .card-face.front {
+    pointer-events: none;
+    visibility: hidden;
+}
+
 /* 翻卡外层区域优化 */
 .flashcard-wrapper {
     flex: 1;
