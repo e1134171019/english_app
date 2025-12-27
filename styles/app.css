@@ -1024,12 +1024,12 @@ body::before {
 }
 
 .card-face.back {
+    transform: rotateY(180deg);
+    /* Critical for card flip */
     justify-content: flex-start;
-    /* Start from top, let margin-top: auto push related-info to bottom */
     padding: 20px 24px;
-    /* Slightly more padding for back */
-    gap: 8px;
-    /* Space between elements */
+    gap: 16px;
+    /* Increase gap for better spacing */
 }
 
 /* 翻卡外层区域优化 */
