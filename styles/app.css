@@ -804,15 +804,78 @@ body::before {
 .flashcard-container {
     perspective: 1000px;
     width: 90%;
-    /* aspect-ratio: 3/4; */
-    /* ❌ Removed to allow vh-based height */
     margin: 0 auto;
     max-width: 600px;
-    /* ✅ Increased from 340px */
-    max-height: 60vh;
+    max-height: 55vh;  /* 减小最大高度 */
     /* ✅ Limit maximum height */
     position: relative;
     z-index: 50;
+}
+
+/* 小屏幕优化 (< 400px) - 适配 S24 等小屏手机 */
+@media (max-width: 400px) {
+    :root {
+        --text-sm: 0.8rem;
+        --text-base: 0.9rem;
+        --space-2: 10px;
+        --space-3: 16px;
+    }
+
+    /* 翻卡容器优化 */
+    .flashcard-container {
+        max-width: 95%;
+        max-height: 48vh;  /* 减小高度避免超出 */
+    }
+
+    .flashcard {
+        min-height: 36vh;  /* 小屏专用 */
+    }
+
+    /* 卡片内容字体自适应 */
+    .card-front-text {
+        /* 使用 clamp() 函数实现自适应字体 */
+        /* clamp(最小值, 首选值, 最大值) */
+        font-size: clamp(1.3rem, 4vw, 1.8rem) !important;
+    }
+
+    .card-back-text {
+        font-size: clamp(0.9rem, 2.5vw, 1rem) !important;
+    }
+
+    /* 例句字体缩小 */
+    #card-sentence-en,
+    #card-sentence-zh {
+        font-size: 0.85rem;
+    }
+
+    /* 控制按钮区域压缩 */
+    .practice-controls {
+        gap: 8px !important;
+        padding: 10px 8px !important;
+    }
+
+    /* 按钮尺寸调整 */
+    .icon-btn-primary {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    /* 卡片内边距缩小 */
+    .card-face {
+        padding: var(--space-2) !important;
+    }
+
+    /* Quiz 和 Verb3 优化 */
+    #quiz-screen .card,
+    #verb3-screen .card {
+        padding: 14px;
+    }
+
+    .btn {
+        height: 44px;
+        font-size: 0.9rem;
+        padding: 0 16px;
+    }
 }
 
 /* 小屏幕优化 */
@@ -854,7 +917,7 @@ body::before {
 .flashcard {
     position: relative;
     width: 100%;
-    min-height: 45vh;
+    min-height: 40vh;  /* 减小以适应小屏手机 */
     /* ✅ Reduced from 55vh to prevent overflow */
     height: 100%;
     text-align: center;
@@ -887,6 +950,23 @@ body::before {
 
 .card-face.back {
     transform: rotateY(180deg);
+}
+
+/* 卡片文字自适应字体 */
+.card-front-text {
+    /* 使用 clamp() 实现响应式字体 */
+    /* 语法: clamp(最小值, 理想值, 最大值) */
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.card-back-text {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    font-weight: 500;
+    color: var(--text-main);
+    line-height: 1.5;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1378,14 +1458,16 @@ body::before {
     }
 }
 
-/* 小屏幕优化 (< 375px) */
-@media (max-width: 374px) {
+/* 小屏幕优化 (< 400px) - 适配 S24 等小屏手机 */
+@media (max-width: 400px) {
     :root {
         --text-sm: 0.8rem;
         --text-base: 0.9rem;
         --space-2: 12px;
+        --space-3: 16px;
     }
 
+    /* 首页卡片优化 */
     .bento-item {
         height: 90px;
         padding: var(--space-1);
@@ -1395,8 +1477,41 @@ body::before {
         font-size: 0.8rem;
     }
 
+    /* 翻卡优化 */
     .flashcard-container {
-        max-width: 90%;
+        max-width: 95%;
+        max-height: 50vh;  /* 进一步减小 */
+    }
+
+    .flashcard {
+        min-height: 38vh;  /* 小屏专用 */
+    }
+
+    /* 卡片内容字体缩小 */
+    .card-front-text {
+        font-size: 1.8rem !important;  /* 从 2rem 缩小 */
+    }
+
+    .card-back-text {
+        font-size: 1rem;
+    }
+
+    /* 控制按钮区域压缩 */
+    .practice-controls {
+        gap: 8px;
+        padding: 12px 8px;
+    }
+
+    /* 按钮尺寸调整 */
+    .icon-btn-primary {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* 例句字体缩小 */
+    #card-sentence-en,
+    #card-sentence-zh {
+        font-size: 0.85rem;
     }
 }
 
@@ -1416,6 +1531,28 @@ body::before {
 
     .bottom-nav {
         height: 56px;
+    }
+}
+
+/* 小屏手机的 Quiz/Verb3 模式优化 */
+@media (max-width: 400px) {
+    #quiz-screen .card,
+    #verb3-screen .card {
+        padding: 16px;
+    }
+
+    #quiz-question,
+    #verb3-question {
+        font-size: 1.2rem;
+    }
+
+    .input-field {
+        padding: 10px 12px;
+    }
+
+    .btn {
+        height: 44px;
+        font-size: 0.9rem;
     }
 }
 
