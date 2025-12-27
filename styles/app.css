@@ -824,9 +824,10 @@ body::before {
 .flashcard-container {
     perspective: 1000px;
     width: 90%;
+    height: 100%;
+    /* Fill parent height */
     margin: 0 auto;
     max-width: 600px;
-    /* 移除 max-height 限制，让它完全自适应 */
     position: relative;
     z-index: 50;
 }
