@@ -91,34 +91,89 @@ export class AddWordController {
     }
 
     /**
-     * Handle manual word generation
+     * Handle manual word generation (supports batch input)
      */
     async handleManualGenerate() {
         const input = document.getElementById('word-input');
-        const word = input.value.trim();
+        const inputText = input.value.trim();
 
-        if (!word) {
+        if (!inputText) {
             Toast.warning('請輸入單字');
             return;
         }
 
-        console.log(`[AddWordController] Manual generation requested for: ${word}`);
-        Toast.info(`正在生成「${word}」...`);
+        // Parse multiple words (comma or space separated)
+        const words = inputText
+            .split(/[,，\s]+/)
+            .map(w => w.trim().toLowerCase())
+            .filter(w => w.length > 0);
 
-        try {
-            const data = await this.wordService.generateWordWithAI(word);
+        if (words.length === 0) {
+            Toast.warning('請輸入有效單字');
+            return;
+        }
 
-            if (data) {
-                this.addWord(data, 'manual');
-                this.wordService.saveToUserWords(data);
-                Toast.success(`✓ 已生成「${word}」`);
-                input.value = '';
-            } else {
-                Toast.error('生成失敗');
+        // Remove duplicates from input
+        const uniqueWords = [...new Set(words)];
+
+        if (uniqueWords.length < words.length) {
+            const duplicateCount = words.length - uniqueWords.length;
+            Toast.info(`已移除 ${duplicateCount} 個重複單字`);
+        }
+
+        // Filter out words that already exist in preview
+        const newWords = uniqueWords.filter(word =>
+            !this.todayWords.some(w => w.english.toLowerCase() === word)
+        );
+
+        const existingCount = uniqueWords.length - newWords.length;
+        if (existingCount > 0) {
+            const existingWords = uniqueWords.filter(word =>
+                this.todayWords.some(w => w.english.toLowerCase() === word)
+            );
+            Toast.warning(`已跳過 ${existingCount} 個已存在單字：${existingWords.join(', ')}`);
+        }
+
+        if (newWords.length === 0) {
+            Toast.info('所有單字都已存在');
+            return;
+        }
+
+        console.log(`[AddWordController] Batch generation: ${newWords.length} words`);
+        Toast.info(`正在生成 ${newWords.length} 個單字...`);
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const word of newWords) {
+            try {
+                console.log(`[AddWordController] Generating: ${word}`);
+                const data = await this.wordService.generateWordWithAI(word);
+
+                if (data) {
+                    this.addWord(data, 'manual');
+                    this.wordService.saveToUserWords(data);
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.warn(`[AddWordController] Failed to generate: ${word}`);
+                }
+            } catch (error) {
+                failCount++;
+                console.error(`[AddWordController] Error generating "${word}":`, error);
             }
-        } catch (error) {
-            console.error('[AddWordController] Generation error:', error);
-            Toast.error('生成失敗：' + error.message);
+        }
+
+        // Clear input
+        input.value = '';
+
+        // Show result
+        if (successCount > 0 && failCount === 0) {
+            Toast.success(`✓ 已生成 ${successCount} 個單字`);
+        } else if (successCount > 0 && failCount > 0) {
+            Toast.warning(`生成完成：成功 ${successCount} 個，失敗 ${failCount} 個`);
+        } else {
+            Toast.error(`生成失敗 (${failCount} 個)`);
         }
     }
 
@@ -197,29 +252,34 @@ export class AddWordController {
         }
 
         container.innerHTML = this.todayWords.map((word, index) => `
-            <div class="word-card">
-                <div class="word-header">
-                    <h3 class="word-title">${word.english} <span class="pos-tag">${word.pos}</span></h3>
-                    <button class="delete-btn" onclick="window.addWordController.deleteWord(${index})" title="刪除">
-                        ❌
-                    </button>
-                </div>
-                <p class="word-translation">${word.translation}</p>
-                <p class="word-phonetic">${word.phonetic}</p>
-                <div class="word-example">
-                    <p class="example-en">"${word.exampleEn}"</p>
-                    <p class="example-zh">→ ${word.exampleZh}</p>
-                </div>
-                <div class="word-meta">
-                    <span class="source-tag source-${word.source}">
-                        ${word.source === 'manual' ? '📝 手動生成' : '💡 例句點擊'}
-                    </span>
-                    <span class="time-tag">${this.formatTime(word.generatedAt)}</span>
-                </div>
+            <div class="word-item" onclick="window.addWordController.viewWord('${word.english}')" title="點擊查看完整內容">
+                <span class="word-name">${word.english}</span>
+                <button class="delete-btn" onclick="event.stopPropagation(); window.addWordController.deleteWord(${index})" title="刪除">
+                    ❌
+                </button>
             </div>
         `).join('');
 
         console.log(`[AddWordController] Rendered ${this.todayWords.length} words`);
+    }
+
+    /**
+     * Navigate to word practice to view full details
+     */
+    viewWord(english) {
+        console.log(`[AddWordController] Viewing word: ${english}`);
+
+        // Navigate to practice screen with this word
+        // Assuming there's a navigate function in main app
+        if (window.location.hash) {
+            window.location.hash = `practice-screen/${english}`;
+        } else {
+            // Use the app's router
+            const event = new CustomEvent('navigate-to-word', {
+                detail: { word: english }
+            });
+            document.dispatchEvent(event);
+        }
     }
 
     /**
