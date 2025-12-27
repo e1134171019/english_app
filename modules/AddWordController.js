@@ -255,7 +255,7 @@ export class AddWordController {
             <div class="word-item" onclick="window.addWordController.viewWord('${word.english}')" title="點擊查看完整內容">
                 <span class="word-name">${word.english}</span>
                 <button class="delete-btn" onclick="event.stopPropagation(); window.addWordController.deleteWord(${index})" title="刪除">
-                    ❌
+                    刪除
                 </button>
             </div>
         `).join('');
@@ -264,21 +264,44 @@ export class AddWordController {
     }
 
     /**
-     * Navigate to word practice to view full details
+     * Navigate to flashcard practice to view full word details
      */
     viewWord(english) {
         console.log(`[AddWordController] Viewing word: ${english}`);
 
-        // Navigate to practice screen with this word
-        // Assuming there's a navigate function in main app
-        if (window.location.hash) {
-            window.location.hash = `practice-screen/${english}`;
+        // Find the word data
+        const wordData = this.todayWords.find(w => w.english === english);
+        if (!wordData) {
+            console.error(`[AddWordController] Word not found: ${english}`);
+            return;
+        }
+
+        // Navigate to practice screen
+        const router = window.Router;
+        if (router && router.navigate) {
+            router.navigate('practice-screen');
+
+            // Wait for screen to load, then show this specific word
+            setTimeout(() => {
+                const flashcardController = window.container?.get('flashcardController');
+                if (flashcardController) {
+                    // Find word in active deck or create temporary deck
+                    flashcardController.showSpecificWord(wordData);
+                } else {
+                    console.warn('[AddWordController] FlashcardController not available');
+                }
+            }, 100);
         } else {
-            // Use the app's router
-            const event = new CustomEvent('navigate-to-word', {
-                detail: { word: english }
-            });
-            document.dispatchEvent(event);
+            console.warn('[AddWordController] Router not available, trying alternative navigation');
+
+            // Alternative: directly manipulate screens
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+
+            const practiceScreen = document.getElementById('practice-screen');
+            if (practiceScreen) {
+                practiceScreen.classList.add('active');
+            }
         }
     }
 

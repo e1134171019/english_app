@@ -153,16 +153,18 @@
 .delete-btn {
     background: none;
     border: none;
-    font-size: 20px;
+    color: #f44336;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 8px;
-    transition: transform 0.2s, background 0.2s;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .delete-btn:hover {
     background: #ffebee;
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .delete-btn:active {
