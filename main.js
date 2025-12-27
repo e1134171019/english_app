@@ -144,9 +144,54 @@ const App = {
    * @private
    */
   _registerEvents() {
-    document.addEventListener('click', this._handleGlobalClick.bind(this), true);
-    console.log('[App] ✓ Global click handler registered');
+    // 使用 Pointer Events 以支持移动端和桌面端
+    // pointerup 在桌面等同于 mouseup，在移动端等同于 touchend
+    const TAP_EVENT = window.PointerEvent ? 'pointerup' : 'click';
+
+    document.addEventListener(TAP_EVENT, this._handleGlobalClick.bind(this), {
+      capture: true,
+      passive: false  // 允许 preventDefault() 防止滚动冲突
+    });
+    console.log(`[App] ✓ Global ${TAP_EVENT} handler registered`);
+
+    // 移动端音频解锁机制
+    this._setupAudioUnlock();
   },
+
+  /**
+   * 移动端音频解锁（解决 iOS Safari 等需要用户手势才能播放音频的限制）
+   * @private
+   */
+  _setupAudioUnlock() {
+    let audioUnlocked = false;
+
+    const unlockAudio = async () => {
+      if (audioUnlocked) return;
+
+      try {
+        // 尝试创建并播放静音音频以解锁音频上下文
+        if (window.speechSynthesis) {
+          const utterance = new SpeechSynthesisUtterance('');
+          utterance.volume = 0;
+          window.speechSynthesis.speak(utterance);
+          window.speechSynthesis.cancel();
+          audioUnlocked = true;
+          console.log('[App] ✓ Audio unlocked');
+        }
+      } catch (err) {
+        console.warn('[App] Audio unlock failed:', err);
+      }
+    };
+
+    // 在首次用户交互时解锁
+    const events = ['pointerdown', 'touchstart', 'click'];
+    const handler = () => {
+      unlockAudio();
+      events.forEach(e => document.removeEventListener(e, handler));
+    };
+    events.forEach(e => document.addEventListener(e, handler, { once: true, passive: true }));
+  },
+
 
   /**
    * Global click handler - handles all click events with priority order
@@ -165,7 +210,10 @@ const App = {
     // Priority 2: Interactive Word (With Translation Tooltip)
     const token = e.target.closest('.interactive-word');
     if (token) {
+      // 防止移动端滚动/选字冲突（桌面端无影响）
+      e.preventDefault();
       e.stopPropagation();
+
       const word = token.dataset.word || token.textContent.trim();
 
       // 播放發音

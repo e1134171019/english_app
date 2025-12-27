@@ -964,10 +964,6 @@ body::before {
         /* 移除 max-height，让它自适应 */
     }
 
-    .flashcard {
-        /* 移除固定 vh，完全由 flex 控制 */
-    }
-
     .card-face {
         font-size: 1.1rem;
     }
@@ -1061,6 +1057,13 @@ body::before {
     font-weight: 500;
     color: var(--text-main);
     line-height: 1.5;
+}
+
+/* 例句容器触摸优化 */
+.example-sentence-container,
+.example-sentence-area,
+[class*="example"] {
+    touch-action: manipulation;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1179,6 +1182,10 @@ body::before {
 
 /* Interactive Word Styling */
 .interactive-word {
+    /* 移动端触摸优化 */
+    display: inline-block;
+    touch-action: manipulation;
+
     cursor: pointer;
     border-bottom: 1px dashed var(--text-hint);
     color: var(--primary);
