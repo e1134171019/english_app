@@ -104,17 +104,20 @@ export default async function handler(req, res) {
 function generateWordPrompt(word) {
     return `You are an expert English-Chinese dictionary AI. Generate a complete, accurate JSON object for the English word "${word}".
 
+**CRITICAL: ALL CHINESE TEXT MUST BE IN TRADITIONAL CHINESE (繁體中文), NOT SIMPLIFIED CHINESE (简体中文).**
+
 CRITICAL REQUIREMENTS:
 1. Determine the correct part of speech (POS)
 2. Create a natural, context-appropriate example sentence
-3. Provide accurate Chinese translations
+3. Provide accurate TRADITIONAL CHINESE translations
 4. If it's a VERB, include past tense and past participle
 5. Include synonyms and word family for interactive learning
+6. **Use ONLY Traditional Chinese characters (繁體字) for all Chinese text**
 
 OUTPUT FORMAT (JSON only, no explanation):
 {
   "english": "${word}",
-  "translation": "準確的中文翻譯（可包含多個意思用；分隔）",
+  "translation": "準確的繁體中文翻譯（可包含多個意思用；分隔）",
   "level": "J3",
   "schoolLevel": "",
   "pos": "詞性代碼 (n./v./vt./vi./adj./adv./prep./conj./pron./art./interj.)",
