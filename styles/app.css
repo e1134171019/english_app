@@ -1464,7 +1464,8 @@ body::before {
 }
 
 /* 性能优化：促进 GPU 加速 */
-.flashcard,
+/* NOTE: .flashcard 不能使用 backface-visibility: hidden，
+   否则翻转后所有子元素都无法被点击（hit-testing 失败）*/
 .card,
 .btn,
 .chip {
