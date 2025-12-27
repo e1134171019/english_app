@@ -1015,12 +1015,21 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     padding: var(--space-4);
 }
 
+.card-face.front {
+    justify-content: center;
+    /* Center content on front */
+}
+
 .card-face.back {
-    transform: rotateY(180deg);
+    justify-content: flex-start;
+    /* Start from top, let margin-top: auto push related-info to bottom */
+    padding: 20px 24px;
+    /* Slightly more padding for back */
+    gap: 8px;
+    /* Space between elements */
 }
 
 /* 翻卡外层区域优化 */
