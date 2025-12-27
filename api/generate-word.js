@@ -144,8 +144,8 @@ OUTPUT FORMAT (JSON only, no explanation):
   "verb": null,
   "synonyms": ["同義詞1", "同義詞2", "同義詞3"],
   "family": "相關詞族，用逗號分隔",
-  "pattern": "如果是動詞填變化模式（REG_ED/IRREG等），否則空字串",
-  "patternZh": "變化模式的中文說明"
+  "pattern": "如果是動詞填變化模式（REG_ED/IRREG/REG_IED等），否則空字串",
+  "patternZh": "變化模式的中文說明（如：規則動詞：原形＋ed，二三態同形）"
 }
 
 IMPORTANT: If this is a VERB, set "verb" to {"base":"${word}","past":"過去式","pp":"過去分詞"} instead of null.
