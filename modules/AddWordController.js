@@ -152,7 +152,8 @@ export class AddWordController {
 
                 if (data) {
                     this.addWord(data, 'manual');
-                    this.wordService.saveToUserWords(data);
+                    // Removed: this.wordService.saveToUserWords(data);
+                    // Only save to today's preview, not permanent database
                     successCount++;
                 } else {
                     failCount++;

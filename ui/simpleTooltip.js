@@ -67,7 +67,8 @@ export const SimpleTooltip = {
                         const generatedData = await this.wordService.generateWordWithAI(identification.baseForm, sentence);
 
                         if (generatedData) {
-                            this.wordService.saveToUserWords(generatedData);
+                            // Removed: this.wordService.saveToUserWords(generatedData);
+                            // Only save to today's preview list, not permanent database
                             console.log(`[Tooltip] ✅ AI Generated complete data for "${generatedData.english}":`, generatedData);
 
                             // Add to today's preview list
@@ -75,7 +76,7 @@ export const SimpleTooltip = {
                                 window.addWordController.addWord(generatedData, 'tooltip');
                             }
 
-                            console.log(`[Tooltip] ✅ Saved to userWords in localStorage`);
+                            console.log(`[Tooltip] ✅ Added to preview list`);
                             Toast.success(`✓ 已自動生成「${identification.baseForm}」`);
 
                             // Show with inflection info
