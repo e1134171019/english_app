@@ -10,7 +10,7 @@ import { ServiceContainer } from './core/ServiceContainer.js';
 import { WordService } from './services/wordService.js?v=20251227_AI_VERCEL';
 import { StorageService } from './services/storageService.js?v=20251216_DECK';
 import { AudioService } from './services/audioService.js?v=20251216_FINAL';
-import { AIService } from './services/AIService.js?v=20251216_LOCAL';
+import { AIService } from './services/aiService.js?v=20251216_LOCAL';
 import { DeckService } from './services/DeckService.js';
 
 // Feature Modules (Controller Layer) with Cache Busting
