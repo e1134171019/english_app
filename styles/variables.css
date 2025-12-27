@@ -1,0 +1,83 @@
+/* ==================== */
+/* CSS VARIABLES        */
+/* ==================== */
+
+:root {
+    /* --- Color Palette --- */
+    --primary: #6366F1;
+    --primary-focus: #4F46E5;
+    --primary-light: #e0e7ff;
+    --primary-content: #FFFFFF;
+
+    /* Backgrounds */
+    --bg-app-wrapper: #F0F2F5;
+    --bg-surface: #FFFFFF;
+    --bg-body: #F9FAFB;
+    --bg-subtle: #F3F4F6;
+
+    /* Semantic Colors */
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+
+    /* Text Colors */
+    --text-main: #1F2937;
+    --text-sub: #4B5563;
+    --text-hint: #9CA3AF;
+    --text-inverse: #FFFFFF;
+
+    /* Borders */
+    --border-color: #E5E7EB;
+    --border-focus: #6366F1;
+
+    /* --- Spacing System (8pt Grid) --- */
+    --space-0_5: 4px;
+    --space-1: 8px;
+    --space-1_5: 12px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --space-6: 48px;
+
+    /* --- Typography --- */
+    --font-sans: 'Inter', 'Roboto', 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+
+    /* --- Shapes & Effects --- */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-floating: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    /* --- Layout Dimensions --- */
+    --header-height: 56px;
+    --bottom-nav-height: 64px;
+    --app-width-desktop: 480px;
+    --app-max-height-desktop: 880px;
+
+    /* --- Responsive Breakpoints --- */
+    --breakpoint-tablet: 768px;
+    --breakpoint-desktop: 1024px;
+    --breakpoint-wide: 1440px;
+}
+
+/* 小屏幕变量覆盖 */
+@media (max-width: 400px) {
+    :root {
+        --text-sm: 0.8rem;
+        --text-base: 0.9rem;
+        --space-2: 10px;
+        --space-3: 16px;
+    }
+}
