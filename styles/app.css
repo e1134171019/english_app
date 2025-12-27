@@ -829,12 +829,12 @@ body::before {
         width: 98%;
         height: 100%;  /* 占满 wrapper 的高度 */
         max-height: none;  /* 移除限制，让它自适应 */
-        min-height: 0;  /* 允许缩小 */
+        min-height: 60vh;  /* 关键：确保最小高度 */
     }
 
     .flashcard {
         height: 100%;  /* 占满容器 */
-        min-height: 0;  /* 移除固定限制 */
+        min-height: 60vh;  /* 与容器保持一致 */
     }
 
     /* practice-screen 优化 */
@@ -851,7 +851,7 @@ body::before {
     /* 优化翻卡外层容器 - 占满可用空间 */
     .flashcard-wrapper {
         flex: 1;  /* 占满剩余空间 */
-        min-height: 0;  /* 允许 flex 缩小 */
+        min-height: 60vh;  /* 确保 wrapper 有足够高度 */
         padding: 0;  /* 移除 padding，让卡片更大 */
         display: flex;
         align-items: center;
