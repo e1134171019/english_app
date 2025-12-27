@@ -8,8 +8,8 @@ import { AppState } from '../core/state.js';
 import { StorageService } from './storageService.js';
 import lemmatizer from 'wink-lemmatizer';
 
-// API Configuration
-const API_BASE_URL = 'http://localhost:3000';  // Will be updated for production
+// API Configuration - Vercel Production URL
+const API_BASE_URL = 'https://english-app-mu.vercel.app';
 
 // Absolute path resolution for JSON (works across all environments)
 const WORDS_JSON_URL = new URL('../data/wordsData.json', import.meta.url);
