@@ -809,8 +809,7 @@ body::before {
     width: 90%;
     margin: 0 auto;
     max-width: 600px;
-    max-height: 75vh;  /* 增大限制 */
-    /* ✅ Limit maximum height */
+    /* 移除 max-height 限制，让它完全自适应 */
     position: relative;
     z-index: 50;
 }
@@ -997,6 +996,7 @@ body::before {
     align-items: center;
     justify-content: center;
     min-height: 0;  /* 关键：允许 flex 子项缩小 */
+    padding: 0 0 16px 0;  /* 底部预留16px给按钮间距 */
     overflow: hidden;
 }
 
