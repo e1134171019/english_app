@@ -826,16 +826,30 @@ body::before {
     /* 翻卡容器优化 */
     .flashcard-container {
         max-width: 95%;
-        max-height: 50vh;  /* 进一步减小 */
+        max-height: 65vh;  /* 增大占比，减少下方空白 */
+        min-height: 50vh;  /* 确保最小高度 */
     }
 
     .flashcard {
-        min-height: 38vh;  /* 小屏专用 */
+        min-height: 50vh;  /* 小屏专用 - 增大 */
     }
 
     /* practice-screen 优化 */
     #practice-screen.active {
-        padding: 8px !important;  /* 更小的 padding */
+        padding: 6px 8px !important;  /* 上下更小，避免与按钮重叠 */
+        gap: 6px;  /* 减小元素间隙 */
+    }
+
+    /* 减小进度条区域的 margin */
+    #practice-screen .progress-container {
+        margin-bottom: 8px !important;
+    }
+
+    /* 优化翻卡外层容器 */
+    .flashcard-wrapper {
+        flex: 1;
+        min-height: 0;
+        padding: 4px 0;  /* 减少上下空隙 */
     }
 
     /* 卡片内容字体自适应 */
@@ -932,7 +946,7 @@ body::before {
 .flashcard {
     position: relative;
     width: 100%;
-    min-height: 40vh;  /* 减小以适应小屏手机 */
+    min-height: 45vh;  /* 增大基础最小高度 */
     /* ✅ Reduced from 55vh to prevent overflow */
     height: 100%;
     text-align: center;
