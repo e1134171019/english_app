@@ -398,22 +398,28 @@
       <!-- G. Add Word Screen - AI Generated Words Preview -->
       <section id="add-screen" class="screen">
         <div class="add-word-container">
-          <!-- Input Section -->
-          <div class="input-section">
-            <input type="text" id="word-input" placeholder="輸入單字（可用逗號分隔多個）..." class="word-input">
-            <button id="generate-btn" class="primary-btn">🔍 生成</button>
+
+          <!-- Section 1: Input Area -->
+          <div class="input-card">
+            <h3 class="section-title">手動生成單字</h3>
+            <div class="input-section">
+              <input type="text" id="word-input" placeholder="輸入單字（可用逗號分隔多個）..." class="word-input">
+              <button id="generate-btn" class="primary-btn">🔍 生成</button>
+            </div>
           </div>
 
-          <!-- Header -->
-          <div class="section-header">
-            <h3>今日 AI 生成 (<span id="word-count">0</span>)</h3>
-            <button id="clear-all-btn" class="text-btn">🗑️ 全部刪除</button>
+          <!-- Section 2: Generated Words List -->
+          <div class="words-card">
+            <div class="section-header">
+              <h3 class="section-title">今日 AI 生成 (<span id="word-count">0</span>)</h3>
+              <button id="clear-all-btn" class="text-btn">🗑️ 全部刪除</button>
+            </div>
+
+            <div id="ai-words-list" class="words-list">
+              <p class="empty-state">今日尚無 AI 生成單字</p>
+            </div>
           </div>
 
-          <!-- Words List -->
-          <div id="ai-words-list" class="words-list">
-            <p class="empty-state">今日尚無 AI 生成單字</p>
-          </div>
         </div>
       </section>
       <section id="delete-screen" class="screen">
