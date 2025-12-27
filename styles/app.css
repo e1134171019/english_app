@@ -145,7 +145,8 @@ body {
     font-family: var(--font-sans);
     background-color: var(--bg-app-wrapper);
     color: var(--text-main);
-    height: 100vh;
+    height: 100vh;  /* fallback */
+    height: 100dvh; /* 动态 viewport，避免手机地址栏影响 */
     width: 100vw;
     overflow: hidden;
     display: flex;
@@ -174,7 +175,8 @@ body::before {
 #app-shell {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: 100vh;  /* fallback */
+    height: 100dvh; /* 动态 viewport */
     background-color: var(--bg-surface);
     display: flex;
     flex-direction: column;
@@ -184,19 +186,18 @@ body::before {
 
 #main-content {
     flex: 1;
-    min-height: 0;
-    /* 關鍵：避免 flex item 自動最小高度造成怪現象 */
+    min-height: 0;  /* 关键：允许 flex 子项缩小 */
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
-    /* overflow-y: auto;  <-- Remove this global scroll if individual screens handle it, but for safety let's keep it or check. 
-       Actually, if the inner card scrolls, this should probably be hidden or standard. 
-       The user said "gap: 12px" is good here too. */
+    overflow-y: auto;  /* 核心：唯一的垂直滚动容器 */
+    -webkit-overflow-scrolling: touch;  /* iOS 平滑滚动 */
     background-color: var(--bg-body);
     position: relative;
     scroll-behavior: smooth;
     gap: 16px;
-    /* Global gap for screens that need it */
+    /* 底部 safe-area 保护 */
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 #main-content::-webkit-scrollbar {
@@ -211,7 +212,7 @@ body::before {
 @media (min-width: 768px) {
     #app-shell {
         width: 520px;
-        height: min(900px, calc(100vh - 40px));
+        height: min(900px, calc(100dvh - 40px));  /* 使用 dvh */
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-floating);
         border: 1px solid rgba(0, 0, 0, 0.08);
@@ -240,7 +241,7 @@ body::before {
 @media (min-width: 1024px) {
     #app-shell {
         width: 560px;
-        height: min(920px, calc(100vh - 60px));
+        height: min(920px, calc(100dvh - 60px));  /* 使用 dvh */
     }
 
     /* 桌面端隐藏底部导航，使用侧边栏或顶部导航 */
@@ -273,7 +274,7 @@ body::before {
 @media (min-width: 1440px) {
     #app-shell {
         width: 600px;
-        height: min(960px, calc(100vh - 80px));
+        height: min(960px, calc(100dvh - 80px));  /* 使用 dvh */
     }
 }
 
@@ -823,13 +824,14 @@ body::before {
         --space-3: 16px;
     }
 
-    /* 翻卡容器优化 - 自适应布局 */
+    /* 翻卡容器优化 - 完全 flex 驱动 */
     .flashcard-container {
-        max-width: 98%;  /* 几乎占满宽度 */
+        max-width: 98%;
         width: 98%;
-        flex: 1;  /* 占满可用空间 */
-        max-height: none;  /* 移除限制，让它自适应 */
+        flex: 1;  /* 占满剩余空间 */
         min-height: 0;  /* 让 flex 自动计算 */
+        display: flex;
+        flex-direction: column;
     }
 
     .flashcard {
@@ -927,11 +929,11 @@ body::before {
 @media (min-width: 768px) {
     .flashcard-container {
         max-width: 480px;
-        max-height: 65vh;
+        /* 移除 max-height，让它自适应 */
     }
 
     .flashcard {
-        min-height: 50vh;
+        /* 移除固定 vh，完全由 flex 控制 */
     }
 
     .card-face {
@@ -954,9 +956,8 @@ body::before {
 .flashcard {
     position: relative;
     width: 100%;
-    min-height: 45vh;  /* 增大基础最小高度 */
-    /* ✅ Reduced from 55vh to prevent overflow */
-    height: 100%;
+    height: 100%;  /* 占满容器 */
+    min-height: 0;  /* 移除固定 vh，让 flex 自动计算 */
     text-align: center;
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
