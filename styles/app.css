@@ -852,7 +852,7 @@ body::before {
     .flashcard-wrapper {
         flex: 1;  /* 占满剩余空间 */
         min-height: 60vh;  /* 确保 wrapper 有足够高度 */
-        padding: 0;  /* 移除 padding，让卡片更大 */
+        padding: 0 0 16px 0;  /* 底部留 16px 边距 */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -879,7 +879,7 @@ body::before {
     .practice-controls {
         gap: 24px !important;  /* 减小按钮间距 */
         padding: 0 !important;  /* 移除 padding */
-        margin: 8px auto 12px auto !important;  /* 减小上下边距 */
+        margin: 0 auto 12px auto !important;  /* 上边距0，依靠 wrapper 的 padding */
         max-width: 280px !important;
     }
 
