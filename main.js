@@ -7,7 +7,7 @@
  */
 import { AppState } from './core/state.js';
 import { ServiceContainer } from './core/ServiceContainer.js';
-import { WordService } from './services/wordService.js?v=20251216_FINAL';
+import { WordService } from './services/wordService.js?v=20251227_AI_VERCEL';
 import { StorageService } from './services/storageService.js?v=20251216_DECK';
 import { AudioService } from './services/audioService.js?v=20251216_FINAL';
 import { AIService } from './services/AIService.js?v=20251216_LOCAL';
@@ -177,7 +177,13 @@ const App = {
         audioService.speak(word);
       }
 
-      // 顯示翻譯浮窗
+      // 獲取例句上下文
+      const sentenceContainer = token.closest('[class*="example"]') ||
+        token.closest('.card-row') ||
+        token.closest('.flashcard-back');
+      const sentence = sentenceContainer?.textContent.trim() || null;
+
+      // 顯示翻譯浮窗（傳入例句上下文）
       const wordService = this.container.get('wordService');
       // 使用 searchWords 查詢單字資料
       const searchResult = wordService?.searchWords([word]);
@@ -186,7 +192,7 @@ const App = {
       SimpleTooltip.show(word, {
         x: e.clientX,
         y: e.clientY
-      }, wordData);
+      }, wordData, sentence);
 
       return;
     }

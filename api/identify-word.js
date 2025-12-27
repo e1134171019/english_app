@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { word } = req.body;
+    const { word, sentence } = req.body;
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
     if (!word) {
@@ -27,22 +27,32 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const prompt = `Identify the base form and grammatical information for the English word "${word}".
+    // Build prompt with optional sentence context
+    let prompt = `Identify the base form and grammatical information for the English word "${word}"`;
 
-Return ONLY valid JSON:
+    if (sentence) {
+        prompt += ` in the following sentence:\n"${sentence}"\n\n`;
+        prompt += `Consider the context to accurately determine the part of speech and inflection type.\n\n`;
+    } else {
+        prompt += `.
+
+`;
+    }
+
+    prompt += `Return ONLY valid JSON:
 {
   "baseForm": "base/infinitive form",
   "pos": "part of speech (v./n./adj./adv.)",
-  "inflection": "grammatical form (e.g., past-tense, plural, gerund, third-person-singular)"
+  "inflection": "grammatical form (e.g., present-participle, past-tense, plural, third-person-singular)",
+  "contextualMeaning": "${sentence ? 'meaning in this context (Chinese)' : 'general meaning (Chinese)'}"
 }
 
 Examples:
-- "runs" → {"baseForm":"run","pos":"v.","inflection":"third-person-singular"}
-- "running" → {"baseForm":"run","pos":"v.","inflection":"gerund"}
-- "apples" → {"baseForm":"apple","pos":"n.","inflection":"plural"}
-- "bigger" → {"baseForm":"big","pos":"adj.","inflection":"comparative"}
+- Word: "runs", Sentence: "He runs to school" → {"baseForm":"run","pos":"v.","inflection":"third-person-singular","contextualMeaning":"跑"}
+- Word: "running", Sentence: "I am running" → {"baseForm":"run","pos":"v.","inflection":"present-participle","contextualMeaning":"正在跑"}
+- Word: "running", Sentence: "Running is healthy" → {"baseForm":"running","pos":"n.","inflection":"base","contextualMeaning":"跑步"}
 
-Now identify: "${word}"`;
+Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
 
     try {
         const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
@@ -76,7 +86,7 @@ Now identify: "${word}"`;
 
         const result = JSON.parse(jsonMatch[0]);
 
-        console.log(`[AI] Identified: ${word} → ${result.baseForm}`);
+        console.log(`[AI] Identified: ${word}${sentence ? ` (in context)` : ''} → ${result.baseForm}`);
         res.status(200).json(result);
     } catch (error) {
         console.error('[AI] Identification error:', error);

@@ -6,7 +6,6 @@
 import { AppState } from '../core/state.js';
 // Removed static import: import { wordsData } from '../data/wordsData.js';
 import { StorageService } from './storageService.js';
-import lemmatizer from 'wink-lemmatizer';
 
 // API Configuration - Vercel Production URL
 const API_BASE_URL = 'https://english-app-mu.vercel.app';
@@ -226,36 +225,14 @@ export const WordService = {
     },
 
     /**
-     * Lemmatize word using wink-lemmatizer
-     * Try all POS types since we don't know the POS yet
-     * @param {string} word - Input word
-     * @returns {string} - Base form or original word
-     */
-    lemmatizeWord(word) {
-        // Try verb first (most common inflections)
-        let lemma = lemmatizer.verb(word);
-        if (lemma !== word) return lemma;
-
-        // Try noun
-        lemma = lemmatizer.noun(word);
-        if (lemma !== word) return lemma;
-
-        // Try adjective
-        lemma = lemmatizer.adjective(word);
-        if (lemma !== word) return lemma;
-
-        return word; // Return original if no lemma found
-    },
-
-    /**
-     * Search word with lemmatization fallback
+     * Search word with AI fallback (lemmatization removed - using AI directly)
      * @param {string} word - Input word
      * @returns {Object|null} - Word data or null
      */
     async findWordWithLemma(word) {
         const lowerWord = word.toLowerCase();
 
-        // Step 1: Try exact match
+        // Try exact match
         const wordMap = new Map();
         [...this.wordsData, ...AppState.getUserWords()].forEach(w => {
             const key = (w.English || w.english || '').toLowerCase();
@@ -266,29 +243,24 @@ export const WordService = {
             return this.normalizeWord(wordMap.get(lowerWord));
         }
 
-        // Step 2: Try lemmatization
-        const lemma = this.lemmatizeWord(lowerWord);
-        if (lemma !== lowerWord && wordMap.has(lemma)) {
-            console.log(`[Lemma] ${lowerWord} → ${lemma}`);
-            return this.normalizeWord(wordMap.get(lemma));
-        }
-
+        // Not found - return null (AI will handle this in tooltip)
         return null;
     },
 
     /**
      * Generate complete word data using AI (GitHub Models API)
      * @param {string} word - Word to generate
+     * @param {string} sentence - Optional sentence context
      * @returns {Promise<Object|null>} - Generated word data or null
      */
-    async generateWordWithAI(word) {
+    async generateWordWithAI(word, sentence = null) {
         try {
-            console.log(`[AI] Generating word: ${word}`);
+            console.log(`[AI] Generating word: ${word}${sentence ? ' (with context)' : ''}`);
 
             const response = await fetch(`${API_BASE_URL}/api/generate-word`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ word })
+                body: JSON.stringify({ word, sentence })
             });
 
             if (!response.ok) {
@@ -310,28 +282,34 @@ export const WordService = {
     },
 
     /**
-     * Identify base form of inflected word using AI
+     * Identify base form of inflected word using AI with optional sentence context
      * @param {string} word - Inflected word
-     * @returns {Promise<string>} - Base form
+     * @param {string} sentence - Optional sentence context
+     * @returns {Promise<Object>} - {baseForm, pos, inflection, contextualMeaning}
      */
-    async identifyWordWithAI(word) {
+    async identifyWordWithAI(word, sentence = null) {
         try {
+            const requestBody = { word };
+            if (sentence) {
+                requestBody.sentence = sentence;
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/identify-word`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ word })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
                 throw new Error('AI identification failed');
             }
 
-            const { baseForm } = await response.json();
-            console.log(`[AI] Identified: ${word} → ${baseForm}`);
-            return baseForm;
+            const result = await response.json();
+            console.log(`[AI] Identified: ${word}${sentence ? ' (with context)' : ''} → ${result.baseForm}`);
+            return result;
         } catch (error) {
             console.warn('[AI] Identification failed:', error);
-            return word;
+            return { baseForm: word }; // Fallback to original word
         }
     },
 
