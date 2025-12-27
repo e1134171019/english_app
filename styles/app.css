@@ -808,7 +808,7 @@ body::before {
     width: 90%;
     margin: 0 auto;
     max-width: 600px;
-    max-height: 55vh;  /* 减小最大高度 */
+    max-height: 75vh;  /* 增大限制 */
     /* ✅ Limit maximum height */
     position: relative;
     z-index: 50;
@@ -829,12 +829,12 @@ body::before {
         width: 98%;
         height: 100%;  /* 占满 wrapper 的高度 */
         max-height: none;  /* 移除限制，让它自适应 */
-        min-height: 60vh;  /* 关键：确保最小高度 */
+        min-height: 0;  /* 让 flex 自动计算 */
     }
 
     .flashcard {
         height: 100%;  /* 占满容器 */
-        min-height: 60vh;  /* 与容器保持一致 */
+        min-height: 0;  /* 移除固定限制 */
     }
 
     /* practice-screen 优化 */
@@ -851,7 +851,7 @@ body::before {
     /* 优化翻卡外层容器 - 占满可用空间 */
     .flashcard-wrapper {
         flex: 1;  /* 占满剩余空间 */
-        min-height: 60vh;  /* 确保 wrapper 有足够高度 */
+        min-height: 0;  /* 移除固定限制，让 flex 自由计算 */
         padding: 0 0 16px 0;  /* 底部留 16px 边距 */
         display: flex;
         align-items: center;
@@ -918,8 +918,8 @@ body::before {
 /* 小屏幕优化 */
 @media (max-height: 700px) {
     .flashcard-container {
-        max-width: 280px;
-        aspect-ratio: 3/3.8;
+        max-width: 95%;  /* 增大宽度 */
+        /* 移除 aspect-ratio，让它自适应高度 */
     }
 }
 
