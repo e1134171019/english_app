@@ -62,7 +62,7 @@ Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
+                model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'You are a linguistic expert specializing in English morphology.' },
                     { role: 'user', content: prompt }

@@ -38,7 +38,7 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4',  // Use GPT-4 for best accuracy
+                model: 'gpt-4o-mini',  // Use gpt-4o-mini (free tier compatible)
                 messages: [
                     {
                         role: 'system',
