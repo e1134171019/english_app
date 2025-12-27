@@ -1,3 +1,7 @@
+import { WordService } from '../services/wordService.js';
+import { StorageService } from '../services/storageService.js';
+import { AudioService } from '../services/audioService.js';
+import { AIService } from '../services/aiService.js';
 import { DeckService } from '../services/DeckService.js';
 /**
  * ServiceContainer - Dependency Injection Container
