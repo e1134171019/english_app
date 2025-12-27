@@ -5,10 +5,39 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Primary Meta Tags -->
   <title>英文練習 App</title>
-  <link rel="stylesheet" href="styles/app.css?v=20251227_nav_fix">
+  <meta name="title" content="英文練習 App">
+  <meta name="description" content="專為英語學習設計的 Web 應用程式，支持單字記憶、聽力練習與動詞三態訓練。">
+  
+  <!-- Mobile Optimization -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#6366F1">
+  
+  <!-- iOS Specific -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="英文練習">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
+  
+  <!-- Prevent auto-zoom on input focus (iOS) -->
+  <meta name="format-detection" content="telephone=no">
+  
+  <link rel="stylesheet" href="styles/app.css?v=20251227_mobile_opt">
   <link rel="stylesheet" href="styles/toast.css?v=20251226">
   <link rel="stylesheet" href="styles/add-word.css?v=20251227_AI">
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered', reg))
+          .catch((err) => console.log('Service Worker registration failed', err));
+      });
+    }
+  </script>
 </head>
 
 <body>
@@ -338,13 +367,6 @@
 
           <div id="v3-msg" class="hidden"
             style="margin-bottom: 24px; font-weight: 500; padding: 12px; border-radius: 8px;"></div>
-
-          <!-- Stats for TS-16 -->
-          <div id="v3-stats" class="hidden"
-            style="display: flex; gap: 12px; justify-content: center; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px;">
-            <span>正確: <span id="v3-stat-correct" style="color: var(--success);">0</span></span>
-            <span>錯誤: <span id="v3-stat-wrong" style="color: var(--error);">0</span></span>
-          </div>
 
           <!-- Stats for TS-16 -->
           <div id="v3-stats" class="hidden"

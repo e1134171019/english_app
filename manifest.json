@@ -1,0 +1,30 @@
+{
+    "name": "英文練習 App",
+    "short_name": "英文練習",
+    "description": "專為英語學習設計的 Web 應用程式，專注於單字記憶、聽力練習與動詞三態變化的訓練。",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#F9FAFB",
+    "theme_color": "#6366F1",
+    "orientation": "portrait",
+    "categories": ["education", "productivity"],
+    "lang": "zh-TW",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}

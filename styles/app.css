@@ -71,6 +71,11 @@
     --bottom-nav-height: 64px;
     --app-width-desktop: 480px;
     --app-max-height-desktop: 880px;
+
+    /* --- Responsive Breakpoints --- */
+    --breakpoint-tablet: 768px;
+    --breakpoint-desktop: 1024px;
+    --breakpoint-wide: 1440px;
 }
 
 /* ==================== */
@@ -82,6 +87,22 @@
 *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    /* 移动端优化：防止文本选中 */
+    -webkit-touch-callout: none;
+}
+
+/* 移动端基础优化 */
+html {
+    /* 防止 iOS 输入框自动缩放 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    /* 优化移动端滚动 */
+    -webkit-overflow-scrolling: touch;
+    /* 防止拉伸效果 */
+    overscroll-behavior-y: contain;
 }
 
 /* ==================== */
@@ -94,7 +115,14 @@
     flex-direction: column;
     padding: 12px 16px 12px 16px !important;
     gap: 16px;
-    /* 確保間距存在 */
+}
+
+/* 桌面端优化 */
+@media (min-width: 768px) {
+    #custom-training-screen.screen.active {
+        padding: 16px 20px !important;
+        gap: 20px;
+    }
 }
 
 #custom-training-screen .card {
@@ -175,13 +203,77 @@ body::before {
     display: none;
 }
 
-@media (min-width: 640px) {
+/* ==================== */
+/* RESPONSIVE DESIGN    */
+/* ==================== */
+
+/* Tablet (768px+): 适度放大 */
+@media (min-width: 768px) {
     #app-shell {
-        width: var(--app-width-desktop);
-        height: min(var(--app-max-height-desktop), calc(100vh - 40px));
+        width: 520px;
+        height: min(900px, calc(100vh - 40px));
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-floating);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .card {
+        padding: var(--space-3);
+    }
+
+    .btn {
+        height: 52px;
+        font-size: 1.05rem;
+    }
+
+    /* 桌面端优化底部导航 */
+    .bottom-nav {
+        border-top: 1px solid var(--border-color);
+    }
+
+    .nav-label {
+        font-size: 0.9rem;
+    }
+}
+
+/* Desktop (1024px+): 居中卡片布局 */
+@media (min-width: 1024px) {
+    #app-shell {
+        width: 560px;
+        height: min(920px, calc(100vh - 60px));
+    }
+
+    /* 桌面端隐藏底部导航，使用侧边栏或顶部导航 */
+    .bottom-nav {
+        /* 保留底部导航，但优化样式 */
+        background: linear-gradient(to top, var(--bg-surface), rgba(255,255,255,0.95));
+        backdrop-filter: blur(10px);
+    }
+
+    /* 优化卡片间距 */
+    #main-content {
+        gap: 20px;
+        padding: 0 4px;
+    }
+
+    /* 桌面端优化输入框 */
+    .input-field {
+        font-size: 1rem;
+        padding: 14px 16px;
+    }
+
+    /* 桌面端优化 chip 按钮 */
+    .chip {
+        padding: 10px 18px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Wide Screen (1440px+): 可选的宽屏优化 */
+@media (min-width: 1440px) {
+    #app-shell {
+        width: 600px;
+        height: min(960px, calc(100vh - 80px));
     }
 }
 
@@ -217,8 +309,10 @@ body::before {
 }
 
 .icon-btn {
-    width: 40px;
-    height: 40px;
+    min-width: 44px;  /* 移动端最小触控目标 */
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
     background: transparent;
@@ -228,6 +322,8 @@ body::before {
     justify-content: center;
     cursor: pointer;
     transition: background-color 0.2s;
+    /* 移动端触控反馈 */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 .icon-btn:hover {
@@ -283,7 +379,7 @@ body::before {
 
 .nav-item {
     flex: 1;
-    height: 100%;
+    min-height: 64px;  /* 确保足够的触控高度 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -294,6 +390,9 @@ body::before {
     cursor: pointer;
     position: relative;
     transition: color 0.2s;
+    /* 移动端优化 */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.1);
 }
 
 .nav-item svg {
@@ -453,6 +552,37 @@ body::before {
     box-shadow: none;
 }
 
+/* 桌面端悬停效果（非触控设备） */
+@media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover {
+        background-color: var(--primary-focus);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-outline:hover {
+        background-color: var(--bg-subtle);
+        border-color: var(--primary);
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .bento-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .chip:hover {
+        background-color: var(--bg-subtle);
+    }
+
+    .icon-btn:hover {
+        background-color: var(--bg-subtle);
+    }
+}
+
 .btn-outline {
     background-color: transparent;
     border: 1px solid var(--border-color);
@@ -496,12 +626,15 @@ body::before {
 .input-field {
     width: 100%;
     padding: var(--space-1_5);
-    font-size: var(--text-base);
+    font-size: 16px;  /* 最小 16px 防止 iOS 自动缩放 */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background-color: var(--bg-body);
     transition: border-color 0.2s;
     font-family: inherit;
+    /* 移动端优化 */
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .input-field:focus {
@@ -602,6 +735,22 @@ body::before {
     gap: var(--space-1_5);
 }
 
+/* 平板和桌面端优化网格间距 */
+@media (min-width: 768px) {
+    .bento-grid {
+        gap: var(--space-2);
+    }
+
+    .bento-item {
+        height: 110px;
+        padding: var(--space-3);
+    }
+
+    .bento-item.hero {
+        height: 90px;
+    }
+}
+
 .bento-item {
     background: var(--bg-surface);
     border-radius: var(--radius-md);
@@ -666,10 +815,33 @@ body::before {
     z-index: 50;
 }
 
+/* 小屏幕优化 */
 @media (max-height: 700px) {
     .flashcard-container {
         max-width: 280px;
         aspect-ratio: 3/3.8;
+    }
+}
+
+/* 桌面端优化翻卡尺寸 */
+@media (min-width: 768px) {
+    .flashcard-container {
+        max-width: 480px;
+        max-height: 65vh;
+    }
+
+    .flashcard {
+        min-height: 50vh;
+    }
+
+    .card-face {
+        font-size: 1.1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .flashcard-container {
+        max-width: 520px;
     }
 }
 
@@ -1062,7 +1234,7 @@ body::before {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: var(--primary);
     color: white;
     border: none;
     font-size: 24px;
@@ -1077,10 +1249,186 @@ body::before {
 }
 
 .floating-back-btn:hover {
-    background: var(--primary-hover);
+    background: var(--primary-focus);
     transform: scale(1.1);
 }
 
 .floating-back-btn.hidden {
     display: none !important;
+}
+
+/* ==================== */
+/* RESPONSIVE UTILITIES */
+/* ==================== */
+
+/* 移动端显示/隐藏 */
+.mobile-only {
+    display: block;
+}
+
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+
+    .desktop-only {
+        display: block;
+    }
+}
+
+/* 移动端触控反馈优化 */
+@media (hover: none) and (pointer: coarse) {
+    /* 移动设备上的触控反馈 */
+    .btn:active,
+    .chip:active,
+    .bento-item:active,
+    .nav-item:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+
+    /* 移动端卡片点击反馈 */
+    .card:active {
+        transform: scale(0.99);
+    }
+
+    /* 移动端按钮波纹效果 */
+    .btn-primary:active::after,
+    .btn-outline:active::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%) scale(0);
+        animation: ripple 0.6s ease-out;
+    }
+
+    @keyframes ripple {
+        to {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 0;
+        }
+    }
+}
+
+/* ==================== */
+/* MOBILE TOUCH OPTIMIZATION */
+/* ==================== */
+
+/* 移动端触控反馈优化 */
+@media (hover: none) and (pointer: coarse) {
+    /* 移动设备上的触控反馈 */
+    .btn:active,
+    .chip:active,
+    .bento-item:active,
+    .nav-item:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+
+    /* 移动端卡片点击反馈 */
+    .card:active {
+        transform: scale(0.99);
+    }
+
+    /* 增强触控区域 */
+    .icon-btn {
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    /* 优化翻卡触控 */
+    .flashcard {
+        cursor: pointer;
+    }
+}
+
+/* 性能优化：促进 GPU 加速 */
+.flashcard,
+.card,
+.btn,
+.chip {
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* 移动端优化 */
+    transform: translateZ(0);
+}
+
+/* 打印样式 */
+@media print {
+    .bottom-nav,
+    .floating-back-btn,
+    .top-app-bar button {
+        display: none !important;
+    }
+
+    #app-shell {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+    }
+}
+
+/* 小屏幕优化 (< 375px) */
+@media (max-width: 374px) {
+    :root {
+        --text-sm: 0.8rem;
+        --text-base: 0.9rem;
+        --space-2: 12px;
+    }
+
+    .bento-item {
+        height: 90px;
+        padding: var(--space-1);
+    }
+
+    .bento-item .label {
+        font-size: 0.8rem;
+    }
+
+    .flashcard-container {
+        max-width: 90%;
+    }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .flashcard-container {
+        max-height: 70vh;
+    }
+
+    .flashcard {
+        min-height: 60vh;
+    }
+
+    .top-app-bar {
+        height: 48px;
+    }
+
+    .bottom-nav {
+        height: 56px;
+    }
+}
+
+/* 桌面端调整浮动按钮位置（相对于 app-shell）*/
+@media (min-width: 768px) {
+    .floating-back-btn {
+        left: calc(50% - 280px);
+        bottom: 90px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .floating-back-btn {
+        left: calc(50% - 300px);
+    }
 }

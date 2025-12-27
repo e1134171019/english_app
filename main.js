@@ -7,6 +7,7 @@
  */
 import { AppState } from './core/state.js';
 import { ServiceContainer } from './core/ServiceContainer.js';
+import { MobileOptimizations } from './core/mobileOptimizations.js';
 import { WordService } from './services/wordService.js?v=20251227_AI_VERCEL';
 import { StorageService } from './services/storageService.js?v=20251216_DECK';
 import { AudioService } from './services/audioService.js?v=20251216_FINAL';
@@ -20,16 +21,14 @@ import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
 import { CustomController } from './modules/CustomController.js?v=20251227_verb3_validation';
 import { AddWordController } from './modules/AddWordController.js?v=20251227_AI';
 
-// Refactored UI System
-// import { TooltipManager } from './ui/TooltipManager.js'; // TEMP: Removed - file missing
+// UI Components
 import { Toast } from './ui/toast.js';
 import { SimpleTooltip } from './ui/simpleTooltip.js';
+import { InstallPrompt } from './ui/installPrompt.js';
 
 const App = {
   container: null,
   currentModule: null,
-  eventCoordinator: null,
-  tooltipManager: null,
 
   async init() {
     console.log('🚀 App Initializing with ServiceContainer...');
@@ -52,16 +51,6 @@ const App = {
         c.get('wordService')
       );
     });
-
-    // 3. Register UI Components
-    // EventCoordinator removed - using data-action pattern instead
-    // TooltipManager removed - file missing, functionality disabled
-
-    // this.container.register('tooltipManager', (c) => new TooltipManager({
-    //   wordService: c.get('wordService'),
-    //   audioService: c.get('audioService'),
-    //   aiService: c.get('aiService')
-    // }));
 
     console.log('[App] ✓ Services registered:', this.container.list().join(', '));
 
@@ -86,26 +75,16 @@ const App = {
     }
 
     // 5. Initialize UI Components
-    // Initialize SimpleTooltip with AI support
     SimpleTooltip.init(wordService);
 
-    // TooltipManager disabled - file missing
-    // this.tooltipManager = this.container.get('tooltipManager');
-    // try {
-    //   this.tooltipManager.init();
-    // } catch (error) {
-    //   console.error('[App] TooltipManager init failed:', error);
-    // }
-
-    // 7. Setup event handling (data-action pattern)
+    // 6. Setup event handling (data-action pattern)
     this._registerEvents();
 
-    // 8. Setup navigation and level selection
-    // this.updateStats(); // REMOVED: Method doesn't exist, was crashing init
+    // 7. Setup navigation and level selection
     this.setupNavigation();
     this.setupLevelSelect();
 
-    // 6. Initialize feature modules (With Dependency Injection)
+    // 8. Initialize feature modules (With Dependency Injection)
 
     // Flashcard: Needs wordService, audioService
     FlashcardController.init({
@@ -144,7 +123,16 @@ const App = {
     // Expose globally for word card delete buttons
     window.addWordController = addWordController;
 
-    // 7. Show initial screen
+    // 9. Initialize mobile optimizations
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      MobileOptimizations.init();
+      console.log('[App] ✓ Mobile optimizations enabled');
+    }
+
+    // 10. Initialize PWA install prompt
+    InstallPrompt.init();
+
+    // 11. Show initial screen
     this.navigate('home-screen');
 
     console.log('✅ App Initialized Successfully');
@@ -367,43 +355,6 @@ const App = {
     } else {
       console.warn('[App] Unknown action:', action, el);
     }
-  },
-
-  navigate(screenId, params = {}) {
-    console.log(`[Router] Navigating to ${screenId}`, params);
-
-    // Hide all screens
-    document.querySelectorAll('.screen').forEach(s => {
-      s.style.display = 'none';
-      s.classList.remove('active');
-    });
-
-    // Show target screen
-    const screen = document.getElementById(screenId);
-    if (screen) {
-      screen.style.display = 'block';
-      screen.classList.add('active');
-    }
-
-    // Show/hide floating back button
-    const backBtn = document.getElementById('floating-back-btn');
-    if (backBtn) {
-      const showBackFor = ['practice-screen', 'quiz-screen', 'verb3-screen'];
-      if (showBackFor.includes(screenId)) {
-        backBtn.classList.remove('hidden');
-      } else {
-        backBtn.classList.add('hidden');
-      }
-    }
-
-    // Module-specific logic
-    this._loadModuleForScreen(screenId, params);
-  },
-
-  _loadModuleForScreen(screenId, params) {
-    // Keep lightweight stats logic here or move to a DashboardModule.
-    // For now, logging counts is fine.
-    // const counts = WordService.getWordCounts();
   },
 
   /* --- Router Logic --- */
