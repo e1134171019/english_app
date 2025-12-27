@@ -84,8 +84,9 @@ export const FlashcardController = {
 
         const el = document.getElementById('practice-screen');
         if (el) {
-            el.style.display = 'block';
-            el.classList.add('active');
+            // Remove inline display style to let CSS flex layout work
+            el.style.display = '';  // Clear inline style
+            el.classList.add('active');  // CSS handles display via .active class
         }
     },
 
