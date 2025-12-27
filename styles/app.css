@@ -497,6 +497,8 @@ body::before {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 12px !important;  /* 小屏手机优化 */
+    gap: 0;  /* 移除 gap，使用 margin 控制 */
 }
 
 @keyframes fade-in {
@@ -824,11 +826,16 @@ body::before {
     /* 翻卡容器优化 */
     .flashcard-container {
         max-width: 95%;
-        max-height: 48vh;  /* 减小高度避免超出 */
+        max-height: 50vh;  /* 进一步减小 */
     }
 
     .flashcard {
-        min-height: 36vh;  /* 小屏专用 */
+        min-height: 38vh;  /* 小屏专用 */
+    }
+
+    /* practice-screen 优化 */
+    #practice-screen.active {
+        padding: 8px !important;  /* 更小的 padding */
     }
 
     /* 卡片内容字体自适应 */
@@ -952,18 +959,29 @@ body::before {
     transform: rotateY(180deg);
 }
 
+/* 翻卡外层区域优化 */
+.flashcard-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;  /* 关键：允许 flex 子项缩小 */
+    overflow: hidden;
+}
+
 /* 卡片文字自适应字体 */
 .card-front-text {
     /* 使用 clamp() 实现响应式字体 */
     /* 语法: clamp(最小值, 理想值, 最大值) */
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-size: clamp(1.5rem, 5vw, 2.5rem) !important;  /* !important 覆盖内联样式 */
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.4;
+    margin: auto;  /* 居中 */
 }
 
 .card-back-text {
-    font-size: clamp(1rem, 3vw, 1.3rem);
+    font-size: clamp(1rem, 3vw, 1.3rem) !important;
     font-weight: 500;
     color: var(--text-main);
     line-height: 1.5;

@@ -186,7 +186,7 @@
         </div>
 
         <!-- Flashcard Area -->
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+        <div class="flashcard-wrapper">
           <div class="flashcard-container">
             <div id="flashcard-stage" class="flashcard-stage">
               <div id="flashcard" class="flashcard">
@@ -196,7 +196,7 @@
                       id="card-level-badge"></span></div>
                   <div id="card-school-label"
                     style="position: absolute; top: 16px; right: 16px; font-size: 12px; color: var(--text-sub);"></div>
-                  <h2 id="card-front-text" style="font-size: 4rem; margin: auto;">中文</h2>
+                  <h2 id="card-front-text" class="card-front-text">中文</h2>
                   <div style="color: var(--text-hint); font-size: var(--text-sm); margin-top: 16px;">點擊翻面</div>
                 </div>
 
@@ -218,8 +218,7 @@
                       </svg>
                     </button>
                   </div>
-                  <h2 id="card-back-text"
-                    style="font-size: 2.2rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">English
+                  <h2 id="card-back-text" class="card-back-text">English
                   </h2>
                   <div id="card-phonetic"
                     style="color: var(--text-sub); margin-bottom: 24px; font-family: monospace; font-size: 1.1rem;">
