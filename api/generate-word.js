@@ -108,11 +108,26 @@ function generateWordPrompt(word) {
 
 CRITICAL REQUIREMENTS:
 1. Determine the correct part of speech (POS)
-2. Create a natural, context-appropriate example sentence
+2. **Create SCENARIO-BASED example sentences** (see detailed requirements below)
 3. Provide accurate TRADITIONAL CHINESE translations
 4. If it's a VERB, include past tense and past participle
 5. Include synonyms and word family for interactive learning
 6. **Use ONLY Traditional Chinese characters (繁體字) for all Chinese text**
+
+**EXAMPLE SENTENCE REQUIREMENTS** (MOST IMPORTANT):
+Your example sentence MUST be:
+- **CONTEXTUAL**: Set in a realistic scenario, not isolated grammar
+- **LEVEL-APPROPRIATE**: Match the word's difficulty level
+  * J1-J2 → Simple daily life (family, shopping, routine activities)
+  * J3-H1 → School/social situations (classroom, friends, hobbies, events)
+  * H2-H3 → Professional/abstract (workplace, news, academic discussions)
+- **SPECIFIC**: Include concrete details to create vivid scenarios
+  * Good: "My mom bought fresh apples from the supermarket this morning"
+  * Bad: "I eat an apple"
+- **COMPLEXITY-MATCHED**:
+  * J1: Simple present/past tense, basic vocabulary
+  * J3: Compound sentences, cause-and-effect relationships
+  * H3: Complex sentences with subordinate clauses, passive voice
 
 OUTPUT FORMAT (JSON only, no explanation):
 {
@@ -122,8 +137,8 @@ OUTPUT FORMAT (JSON only, no explanation):
   "schoolLevel": "",
   "pos": "詞性代碼 (n./v./vt./vi./adj./adv./prep./conj./pron./art./interj.)",
   "phonetic": "IPA音標，格式：/ˈfəʊnətɪk/",
-  "exampleEn": "自然的英文例句，使用這個單字，符合詞性用法",
-  "exampleZh": "例句的準確中文翻譯",
+  "exampleEn": "情景化例句（真實場景，根據level調整複雜度）",
+  "exampleZh": "例句的準確繁體中文翻譯",
   "past": "如果是動詞填過去式，否則空字串",
   "pp": "如果是動詞填過去分詞，否則空字串",
   "verb": null,
