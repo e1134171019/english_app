@@ -830,12 +830,12 @@ body::before {
         width: 98%;
         flex: 1;  /* 占满可用空间 */
         max-height: none;  /* 移除限制，让它自适应 */
-        min-height: 400px;  /* 确保最小高度 */
+        min-height: 0;  /* 让 flex 自动计算 */
     }
 
     .flashcard {
         height: 100%;  /* 占满容器 */
-        min-height: 400px;  /* 与容器一致 */
+        min-height: 0;  /* 移除固定限制，完全自适应 */
     }
 
     /* practice-screen 优化 */
