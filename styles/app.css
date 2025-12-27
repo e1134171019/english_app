@@ -842,7 +842,7 @@ body::before {
     .card-front-text {
         /* 使用 clamp() 函数实现自适应字体 */
         /* clamp(最小值, 首选值, 最大值) */
-        font-size: clamp(1.3rem, 4vw, 1.8rem) !important;
+        font-size: clamp(1rem, 3.5vw, 1.5rem) !important;  /* 进一步减小 */
     }
 
     .card-back-text {
@@ -861,10 +861,18 @@ body::before {
         padding: 10px 8px !important;
     }
 
-    /* 按钮尺寸调整 */
+    /* 按钮尺寸调整 - 增大触摸区域 */
+    .icon-btn,
     .icon-btn-primary {
+        min-width: 48px !important;
+        min-height: 48px !important;
         width: 48px !important;
         height: 48px !important;
+    }
+
+    .icon-btn svg {
+        width: 28px !important;
+        height: 28px !important;
     }
 
     /* 卡片内边距缩小 */
