@@ -15,10 +15,26 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
     console.log('[Service Worker] Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Caching files');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('[Service Worker] Caching files');
+                // Use Promise.allSettled to continue even if some files fail
+                return Promise.allSettled(
+                    ASSETS_TO_CACHE.map(url =>
+                        cache.add(url).catch(err => {
+                            console.warn('[Service Worker] Failed to cache:', url, err);
+                            return null;
+                        })
+                    )
+                );
+            })
+            .then(() => {
+                console.log('[Service Worker] Installation complete');
+                return self.skipWaiting();
+            })
+            .catch((error) => {
+                console.error('[Service Worker] Installation failed:', error);
+            })
     );
 });
 
