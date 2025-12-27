@@ -55,10 +55,15 @@ Examples:
 Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
 
     try {
-        const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+        console.log('[AI] Calling GitHub Models API for identification...');
+        console.log('[AI] Token configured:', GITHUB_TOKEN ? 'Yes' : 'No');
+
+        const response = await fetch('https://models.github.ai/inference/chat/completions', {
             method: 'POST',
             headers: {
+                'Accept': 'application/vnd.github+json',
                 'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                'X-GitHub-Api-Version': '2022-11-28',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -72,8 +77,13 @@ Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
             })
         });
 
+        console.log('[AI] Identification response status:', response.status);
+
         if (!response.ok) {
-            throw new Error('GitHub Models API error');
+            const errorText = await response.text();
+            console.error('[AI] GitHub Models error response:', errorText);
+            console.error('[AI] Status:', response.status);
+            throw new Error(`GitHub Models API error: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
@@ -81,6 +91,7 @@ Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
         const jsonMatch = content.match(/\{[\s\S]*\}/);
 
         if (!jsonMatch) {
+            console.error('[AI] Invalid response format:', content);
             throw new Error('Invalid JSON response');
         }
 
@@ -90,6 +101,10 @@ Now identify: "${word}"${sentence ? ` in: "${sentence}"` : ''}`;
         res.status(200).json(result);
     } catch (error) {
         console.error('[AI] Identification error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('[AI] Error stack:', error.stack);
+        res.status(500).json({
+            error: error.message,
+            hint: 'Check Vercel logs for detailed error information'
+        });
     }
 }

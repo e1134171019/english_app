@@ -31,14 +31,20 @@ export default async function handler(req, res) {
     const prompt = generateWordPrompt(word);
 
     try {
-        const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+        console.log('[AI] Calling GitHub Models API...');
+        console.log('[AI] Token configured:', GITHUB_TOKEN ? 'Yes' : 'No');
+
+        // Use official GitHub Models endpoint
+        const response = await fetch('https://models.github.ai/inference/chat/completions', {
             method: 'POST',
             headers: {
+                'Accept': 'application/vnd.github+json',
                 'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                'X-GitHub-Api-Version': '2022-11-28',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',  // Use gpt-4o-mini (free tier compatible)
+                model: 'gpt-4o-mini',  // Use proper GitHub Models format
                 messages: [
                     {
                         role: 'system',
@@ -49,14 +55,19 @@ export default async function handler(req, res) {
                         content: prompt
                     }
                 ],
-                temperature: 0.3,  // Low for consistency
+                temperature: 0.3,
                 max_tokens: 1000
             })
         });
 
+        console.log('[AI] Response status:', response.status);
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'GitHub Models API error');
+            const errorText = await response.text();
+            console.error('[AI] GitHub Models error response:', errorText);
+            console.error('[AI] Status:', response.status);
+            console.error('[AI] Headers:', Object.fromEntries(response.headers.entries()));
+            throw new Error(`GitHub Models API error: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
@@ -65,6 +76,7 @@ export default async function handler(req, res) {
         // Extract JSON (in case AI adds explanation)
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
+            console.error('[AI] Invalid response format:', content);
             throw new Error('Invalid JSON response from AI');
         }
 
@@ -72,6 +84,7 @@ export default async function handler(req, res) {
 
         // Validate required fields
         if (!wordData.english || !wordData.translation || !wordData.pos) {
+            console.error('[AI] Missing required fields:', wordData);
             throw new Error('Missing required fields in AI response');
         }
 
@@ -79,9 +92,11 @@ export default async function handler(req, res) {
         res.status(200).json(wordData);
     } catch (error) {
         console.error('[AI] Generation error:', error);
+        console.error('[AI] Error stack:', error.stack);
         res.status(500).json({
             error: 'AI generation failed',
-            details: error.message
+            details: error.message,
+            hint: 'Check Vercel logs for detailed error information'
         });
     }
 }
