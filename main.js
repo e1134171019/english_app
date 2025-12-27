@@ -18,6 +18,7 @@ import { FlashcardController } from './modules/FlashcardController.js?v=20251216
 import { QuizController } from './modules/QuizController.js?v=20251227_no_action_at_end';
 import { Verb3Controller } from './modules/Verb3Controller.js?v=20251216_FINAL';
 import { CustomController } from './modules/CustomController.js?v=20251227_verb3_validation';
+import { AddWordController } from './modules/AddWordController.js?v=20251227_AI';
 
 // Refactored UI System
 // import { TooltipManager } from './ui/TooltipManager.js'; // TEMP: Removed - file missing
@@ -134,6 +135,14 @@ const App = {
       container: this.container
     });
     this.container.register('customController', () => CustomController);
+
+    // AddWord: Manage daily AI-generated words preview
+    const addWordController = new AddWordController(this.container.get('wordService'));
+    await addWordController.init();
+    this.container.register('addWordController', () => addWordController);
+
+    // Expose globally for word card delete buttons
+    window.addWordController = addWordController;
 
     // 7. Show initial screen
     this.navigate('home-screen');

@@ -68,6 +68,14 @@ export const SimpleTooltip = {
 
                         if (generatedData) {
                             this.wordService.saveToUserWords(generatedData);
+                            console.log(`[Tooltip] ✅ AI Generated complete data for "${generatedData.english}":`, generatedData);
+
+                            // Add to today's preview list
+                            if (window.addWordController) {
+                                window.addWordController.addWord(generatedData, 'tooltip');
+                            }
+
+                            console.log(`[Tooltip] ✅ Saved to userWords in localStorage`);
                             Toast.success(`✓ 已自動生成「${identification.baseForm}」`);
 
                             // Show with inflection info

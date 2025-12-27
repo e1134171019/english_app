@@ -1,0 +1,235 @@
+/* Add Word Screen Styles */
+
+.add-word-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Input Section */
+.input-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.word-input {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: border-color 0.3s;
+}
+
+.word-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.primary-btn {
+    padding: 14px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+}
+
+/* Section Header */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.text-btn:hover {
+    background: #f5f5f5;
+    color: #666;
+}
+
+/* Words List */
+.words-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 15px;
+}
+
+/* Word Card */
+.word-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #f0f0f0;
+}
+
+.word-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.word-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.word-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.pos-tag {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary);
+    background: rgba(66, 133, 244, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.delete-btn:hover {
+    background: #ffebee;
+    transform: scale(1.1);
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
+}
+
+.word-translation {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin: 8px 0;
+    font-weight: 500;
+}
+
+.word-phonetic {
+    font-size: 15px;
+    color: #666;
+    font-family: Georgia, serif;
+    font-style: italic;
+    margin: 8px 0 16px 0;
+}
+
+.word-example {
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 10px;
+    margin: 12px 0;
+    border-left: 3px solid var(--primary);
+}
+
+.example-en {
+    font-size: 15px;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+}
+
+.example-zh {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.word-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.source-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.source-manual {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.source-tooltip {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.time-tag {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .add-word-container {
+        padding: 16px;
+    }
+
+    .word-title {
+        font-size: 20px;
+    }
+}

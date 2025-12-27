@@ -8,6 +8,7 @@
   <title>英文練習 App</title>
   <link rel="stylesheet" href="styles/app.css?v=20251227_nav_fix">
   <link rel="stylesheet" href="styles/toast.css?v=20251226">
+  <link rel="stylesheet" href="styles/add-word.css?v=20251227_AI">
 </head>
 
 <body>
@@ -394,10 +395,25 @@
         </div>
       </div>
 
-      <!-- G. Add/Delete Placeholders -->
+      <!-- G. Add Word Screen - AI Generated Words Preview -->
       <section id="add-screen" class="screen">
-        <div class="card">
-          <h3 style="margin:0;">新增單字 (TBD)</h3>
+        <div class="add-word-container">
+          <!-- Input Section -->
+          <div class="input-section">
+            <input type="text" id="word-input" placeholder="輸入英文單字..." class="word-input">
+            <button id="generate-btn" class="primary-btn">🔍 生成</button>
+          </div>
+
+          <!-- Header -->
+          <div class="section-header">
+            <h3>今日 AI 生成 (<span id="word-count">0</span>)</h3>
+            <button id="clear-all-btn" class="text-btn">🗑️ 全部刪除</button>
+          </div>
+
+          <!-- Words List -->
+          <div id="ai-words-list" class="words-list">
+            <p class="empty-state">今日尚無 AI 生成單字</p>
+          </div>
         </div>
       </section>
       <section id="delete-screen" class="screen">
