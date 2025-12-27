@@ -145,8 +145,10 @@ body {
     font-family: var(--font-sans);
     background-color: var(--bg-app-wrapper);
     color: var(--text-main);
-    height: 100vh;  /* fallback */
-    height: 100dvh; /* 动态 viewport，避免手机地址栏影响 */
+    height: 100vh;
+    /* fallback */
+    height: 100dvh;
+    /* 动态 viewport，避免手机地址栏影响 */
     width: 100vw;
     overflow: hidden;
     display: flex;
@@ -175,12 +177,15 @@ body::before {
 #app-shell {
     position: relative;
     width: 100%;
-    height: 100vh;  /* fallback */
-    height: 100dvh; /* 动态 viewport */
+    height: 100vh;
+    /* fallback */
+    height: 100dvh;
+    /* 动态 viewport */
     background-color: var(--bg-surface);
     /* Grid 三段式布局：Header / Main / Footer */
     display: grid;
-    grid-template-rows: auto 1fr auto;  /* 固定 / 自适应 / 固定 */
+    grid-template-rows: auto 1fr auto;
+    /* 固定 / 自适应 / 固定 */
     overflow: hidden;
     box-shadow: none;
 }
@@ -190,8 +195,10 @@ body::before {
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
-    overflow-y: auto;  /* 核心：唯一的垂直滚动容器 */
-    -webkit-overflow-scrolling: touch;  /* iOS 平滑滚动 */
+    overflow-y: auto;
+    /* 核心：唯一的垂直滚动容器 */
+    -webkit-overflow-scrolling: touch;
+    /* iOS 平滑滚动 */
     background-color: var(--bg-body);
     position: relative;
     scroll-behavior: smooth;
@@ -212,7 +219,8 @@ body::before {
 @media (min-width: 768px) {
     #app-shell {
         width: 520px;
-        height: min(900px, calc(100dvh - 40px));  /* 使用 dvh */
+        height: min(900px, calc(100dvh - 40px));
+        /* 使用 dvh */
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-floating);
         border: 1px solid rgba(0, 0, 0, 0.08);
@@ -241,13 +249,14 @@ body::before {
 @media (min-width: 1024px) {
     #app-shell {
         width: 560px;
-        height: min(920px, calc(100dvh - 60px));  /* 使用 dvh */
+        height: min(920px, calc(100dvh - 60px));
+        /* 使用 dvh */
     }
 
     /* 桌面端隐藏底部导航，使用侧边栏或顶部导航 */
     .bottom-nav {
         /* 保留底部导航，但优化样式 */
-        background: linear-gradient(to top, var(--bg-surface), rgba(255,255,255,0.95));
+        background: linear-gradient(to top, var(--bg-surface), rgba(255, 255, 255, 0.95));
         backdrop-filter: blur(10px);
     }
 
@@ -274,7 +283,8 @@ body::before {
 @media (min-width: 1440px) {
     #app-shell {
         width: 600px;
-        height: min(960px, calc(100dvh - 80px));  /* 使用 dvh */
+        height: min(960px, calc(100dvh - 80px));
+        /* 使用 dvh */
     }
 }
 
@@ -310,7 +320,8 @@ body::before {
 }
 
 .icon-btn {
-    min-width: 44px;  /* 移动端最小触控目标 */
+    min-width: 44px;
+    /* 移动端最小触控目标 */
     min-height: 44px;
     width: 44px;
     height: 44px;
@@ -380,7 +391,8 @@ body::before {
 
 .nav-item {
     flex: 1;
-    min-height: 64px;  /* 确保足够的触控高度 */
+    min-height: 64px;
+    /* 确保足够的触控高度 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -497,10 +509,13 @@ body::before {
 #practice-screen.active {
     display: flex;
     flex-direction: column;
-    flex: 1;  /* 改用 flex，不用 height:100% */
+    flex: 1;
+    /* 改用 flex，不用 height:100% */
     min-height: 0;
-    padding: 12px !important;  /* 小屏手机优化 */
-    gap: 0;  /* 移除 gap，使用 margin 控制 */
+    padding: 12px !important;
+    /* 小屏手机优化 */
+    gap: 0;
+    /* 移除 gap，使用 margin 控制 */
 }
 
 @keyframes fade-in {
@@ -630,7 +645,8 @@ body::before {
 .input-field {
     width: 100%;
     padding: var(--space-1_5);
-    font-size: 16px;  /* 最小 16px 防止 iOS 自动缩放 */
+    font-size: 16px;
+    /* 最小 16px 防止 iOS 自动缩放 */
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background-color: var(--bg-body);
@@ -828,33 +844,43 @@ body::before {
     .flashcard-container {
         max-width: 98%;
         width: 98%;
-        flex: 1;  /* 占满剩余空间 */
-        min-height: 0;  /* 让 flex 自动计算 */
+        flex: 1;
+        /* 占满剩余空间 */
+        min-height: 0;
+        /* 让 flex 自动计算 */
         display: flex;
         flex-direction: column;
     }
 
     .flashcard {
-        height: 100%;  /* 占满容器 */
-        min-height: 0;  /* 移除固定限制，完全自适应 */
+        height: 100%;
+        /* 占满容器 */
+        min-height: 0;
+        /* 移除固定限制，完全自适应 */
     }
 
     /* practice-screen 优化 */
     #practice-screen.active {
-        padding: 4px 6px !important;  /* 更小 padding，给卡片更多空间 */
-        gap: 4px;  /* 减小元素间隙 */
+        padding: 4px 6px !important;
+        /* 更小 padding，给卡片更多空间 */
+        gap: 4px;
+        /* 减小元素间隙 */
     }
 
     /* 减小进度条区域的 margin */
     #practice-screen .progress-container {
-        margin-bottom: 4px !important;  /* 进一步减小 */
+        margin-bottom: 4px !important;
+        /* 进一步减小 */
     }
 
     /* 优化翻卡外层容器 - 占满可用空间 */
     .flashcard-wrapper {
-        flex: 1;  /* 占满剩余空间 */
-        min-height: 0;  /* 移除固定限制，让 flex 自由计算 */
-        padding: 0 0 16px 0;  /* 底部留 16px 边距 */
+        flex: 1;
+        /* 占满剩余空间 */
+        min-height: 0;
+        /* 移除固定限制，让 flex 自由计算 */
+        padding: 0 0 16px 0;
+        /* 底部留 16px 边距 */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -864,7 +890,8 @@ body::before {
     .card-front-text {
         /* 使用 clamp() 函数实现自适应字体 */
         /* clamp(最小值, 首选值, 最大值) */
-        font-size: clamp(1rem, 3.5vw, 1.5rem) !important;  /* 进一步减小 */
+        font-size: clamp(1rem, 3.5vw, 1.5rem) !important;
+        /* 进一步减小 */
     }
 
     .card-back-text {
@@ -879,9 +906,12 @@ body::before {
 
     /* 控制按钮区域压缩 - 减少占用空间 */
     .practice-controls {
-        gap: 24px !important;  /* 减小按钮间距 */
-        padding: 0 !important;  /* 移除 padding */
-        margin: 0 auto 12px auto !important;  /* 上边距0，依靠 wrapper 的 padding */
+        gap: 24px !important;
+        /* 减小按钮间距 */
+        padding: 0 !important;
+        /* 移除 padding */
+        margin: 0 auto 12px auto !important;
+        /* 上边距0，依靠 wrapper 的 padding */
         max-width: 280px !important;
     }
 
@@ -920,7 +950,8 @@ body::before {
 /* 小屏幕优化 */
 @media (max-height: 700px) {
     .flashcard-container {
-        max-width: 95%;  /* 增大宽度 */
+        max-width: 95%;
+        /* 增大宽度 */
         /* 移除 aspect-ratio，让它自适应高度 */
     }
 }
@@ -956,8 +987,10 @@ body::before {
 .flashcard {
     position: relative;
     width: 100%;
-    height: 100%;  /* 占满容器 */
-    min-height: 0;  /* 移除固定 vh，让 flex 自动计算 */
+    height: 100%;
+    /* 占满容器 */
+    min-height: 0;
+    /* 移除固定 vh，让 flex 自动计算 */
     text-align: center;
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
@@ -992,24 +1025,25 @@ body::before {
 
 /* 翻卡外层区域优化 */
 .flashcard-wrapper {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 0;  /* 关键：允许 flex 子项缩小 */
-    padding: 0 0 16px 0;  /* 底部预留16px给按钮间距 */
-    overflow: hidden;
+    margin: auto 0;
+    /* 垂直居中 */
+    padding: 0;
 }
 
 /* 卡片文字自适应字体 */
 .card-front-text {
     /* 使用 clamp() 实现响应式字体 */
     /* 语法: clamp(最小值, 理想值, 最大值) */
-    font-size: clamp(1.5rem, 5vw, 2.5rem) !important;  /* !important 覆盖内联样式 */
+    font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+    /* !important 覆盖内联样式 */
     font-weight: 600;
     color: var(--text-main);
     line-height: 1.4;
-    margin: auto;  /* 居中 */
+    margin: auto;
+    /* 居中 */
 }
 
 .card-back-text {
@@ -1385,6 +1419,7 @@ body::before {
 
 /* 移动端触控反馈优化 */
 @media (hover: none) and (pointer: coarse) {
+
     /* 移动设备上的触控反馈 */
     .btn:active,
     .chip:active,
@@ -1425,6 +1460,7 @@ body::before {
 
 /* 打印样式 */
 @media print {
+
     .bottom-nav,
     .floating-back-btn,
     .top-app-bar button {
@@ -1459,6 +1495,7 @@ body::before {
 
 /* 小屏手机的 Quiz/Verb3 模式优化 */
 @media (max-width: 400px) {
+
     #quiz-screen .card,
     #verb3-screen .card {
         padding: 16px;
