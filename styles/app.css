@@ -1508,63 +1508,6 @@ body::before {
     }
 }
 
-/* 小屏幕优化 (< 400px) - 适配 S24 等小屏手机 */
-@media (max-width: 400px) {
-    :root {
-        --text-sm: 0.8rem;
-        --text-base: 0.9rem;
-        --space-2: 12px;
-        --space-3: 16px;
-    }
-
-    /* 首页卡片优化 */
-    .bento-item {
-        height: 90px;
-        padding: var(--space-1);
-    }
-
-    .bento-item .label {
-        font-size: 0.8rem;
-    }
-
-    /* 翻卡优化 */
-    .flashcard-container {
-        max-width: 95%;
-        max-height: 50vh;  /* 进一步减小 */
-    }
-
-    .flashcard {
-        min-height: 38vh;  /* 小屏专用 */
-    }
-
-    /* 卡片内容字体缩小 */
-    .card-front-text {
-        font-size: 1.8rem !important;  /* 从 2rem 缩小 */
-    }
-
-    .card-back-text {
-        font-size: 1rem;
-    }
-
-    /* 控制按钮区域压缩 */
-    .practice-controls {
-        gap: 8px;
-        padding: 12px 8px;
-    }
-
-    /* 按钮尺寸调整 */
-    .icon-btn-primary {
-        width: 48px;
-        height: 48px;
-    }
-
-    /* 例句字体缩小 */
-    #card-sentence-en,
-    #card-sentence-zh {
-        font-size: 0.85rem;
-    }
-}
-
 /* 横屏模式优化 */
 @media (orientation: landscape) and (max-height: 500px) {
     .flashcard-container {
