@@ -44,7 +44,9 @@ export const SimpleTooltip = {
                 // If AI found a different base form, search for it
                 if (identification && identification.baseForm && identification.baseForm !== word.toLowerCase()) {
                     console.log(`[Tooltip] AI identified base form: ${identification.baseForm}`);
+                    console.log(`[Tooltip] Searching database for base form "${identification.baseForm}"...`);
                     data = await this.wordService.findWordWithLemma(identification.baseForm);
+                    console.log(`[Tooltip] Base form "${identification.baseForm}" ${data ? 'FOUND ✓' : 'NOT FOUND ✗'} in database`);
 
                     if (data) {
                         // Found the base form! Show inflection info
