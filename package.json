@@ -24,5 +24,8 @@
         "jsdom": "^27.3.0",
         "playwright": "^1.40.0",
         "vitest": "^1.1.0"
+    },
+    "dependencies": {
+        "wink-lemmatizer": "^3.0.4"
     }
 }

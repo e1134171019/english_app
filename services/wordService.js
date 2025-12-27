@@ -6,6 +6,10 @@
 import { AppState } from '../core/state.js';
 // Removed static import: import { wordsData } from '../data/wordsData.js';
 import { StorageService } from './storageService.js';
+import lemmatizer from 'wink-lemmatizer';
+
+// API Configuration
+const API_BASE_URL = 'http://localhost:3000';  // Will be updated for production
 
 // Absolute path resolution for JSON (works across all environments)
 const WORDS_JSON_URL = new URL('../data/wordsData.json', import.meta.url);
@@ -219,6 +223,135 @@ export const WordService = {
      */
     getActiveProcessingWords() {
         return AppState.activeWordList || [];
+    },
+
+    /**
+     * Lemmatize word using wink-lemmatizer
+     * Try all POS types since we don't know the POS yet
+     * @param {string} word - Input word
+     * @returns {string} - Base form or original word
+     */
+    lemmatizeWord(word) {
+        // Try verb first (most common inflections)
+        let lemma = lemmatizer.verb(word);
+        if (lemma !== word) return lemma;
+
+        // Try noun
+        lemma = lemmatizer.noun(word);
+        if (lemma !== word) return lemma;
+
+        // Try adjective
+        lemma = lemmatizer.adjective(word);
+        if (lemma !== word) return lemma;
+
+        return word; // Return original if no lemma found
+    },
+
+    /**
+     * Search word with lemmatization fallback
+     * @param {string} word - Input word
+     * @returns {Object|null} - Word data or null
+     */
+    async findWordWithLemma(word) {
+        const lowerWord = word.toLowerCase();
+
+        // Step 1: Try exact match
+        const wordMap = new Map();
+        [...this.wordsData, ...AppState.getUserWords()].forEach(w => {
+            const key = (w.English || w.english || '').toLowerCase();
+            if (key) wordMap.set(key, w);
+        });
+
+        if (wordMap.has(lowerWord)) {
+            return this.normalizeWord(wordMap.get(lowerWord));
+        }
+
+        // Step 2: Try lemmatization
+        const lemma = this.lemmatizeWord(lowerWord);
+        if (lemma !== lowerWord && wordMap.has(lemma)) {
+            console.log(`[Lemma] ${lowerWord} → ${lemma}`);
+            return this.normalizeWord(wordMap.get(lemma));
+        }
+
+        return null;
+    },
+
+    /**
+     * Generate complete word data using AI (GitHub Models API)
+     * @param {string} word - Word to generate
+     * @returns {Promise<Object|null>} - Generated word data or null
+     */
+    async generateWordWithAI(word) {
+        try {
+            console.log(`[AI] Generating word: ${word}`);
+
+            const response = await fetch(`${API_BASE_URL}/api/generate-word`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.details || 'AI generation failed');
+            }
+
+            const wordData = await response.json();
+            console.log(`[AI] Generated:`, wordData);
+
+            return this.normalizeWord(wordData);
+        } catch (error) {
+            console.error('[AI] Generation error:', error);
+            if (window.Toast) {
+                window.Toast.error(`AI 生成失敗：${error.message}`);
+            }
+            return null;
+        }
+    },
+
+    /**
+     * Identify base form of inflected word using AI
+     * @param {string} word - Inflected word
+     * @returns {Promise<string>} - Base form
+     */
+    async identifyWordWithAI(word) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/identify-word`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word })
+            });
+
+            if (!response.ok) {
+                throw new Error('AI identification failed');
+            }
+
+            const { baseForm } = await response.json();
+            console.log(`[AI] Identified: ${word} → ${baseForm}`);
+            return baseForm;
+        } catch (error) {
+            console.warn('[AI] Identification failed:', error);
+            return word;
+        }
+    },
+
+    /**
+     * Save AI-generated word to userWords
+     * @param {Object} wordData - Word data to save
+     */
+    saveToUserWords(wordData) {
+        const userWords = AppState.getUserWords();
+
+        // Check if already exists
+        const exists = userWords.some(w =>
+            (w.english || w.English || '').toLowerCase() === wordData.english.toLowerCase()
+        );
+
+        if (!exists) {
+            userWords.push(wordData);
+            localStorage.setItem('userWords', JSON.stringify(userWords));
+            console.log(`[WordService] Saved AI word to userWords:`, wordData.english);
+        }
     },
 
     /**

@@ -85,6 +85,9 @@ const App = {
     }
 
     // 5. Initialize UI Components
+    // Initialize SimpleTooltip with AI support
+    SimpleTooltip.init(wordService);
+
     // TooltipManager disabled - file missing
     // this.tooltipManager = this.container.get('tooltipManager');
     // try {
