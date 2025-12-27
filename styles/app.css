@@ -877,9 +877,10 @@ body::before {
 
     /* 控制按钮区域压缩 - 减少占用空间 */
     .practice-controls {
-        gap: 6px !important;
-        padding: 6px 8px !important;  /* 减小 padding */
-        margin-top: 4px !important;  /* 减小上边距 */
+        gap: 24px !important;  /* 减小按钮间距 */
+        padding: 0 !important;  /* 移除 padding */
+        margin: 8px auto 12px auto !important;  /* 减小上下边距 */
+        max-width: 280px !important;
     }
 
     /* 按钮尺寸调整 - 增大触摸区域 */
