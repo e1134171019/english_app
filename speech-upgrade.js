@@ -16,6 +16,7 @@
       alert('這個瀏覽器不支援語音朗讀。');
       return;
     }
+    if (!text) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
@@ -78,15 +79,18 @@
     return lines.find(x => /^[A-Za-z0-9'\"].*[.!?]$/.test(x));
   }
 
+  function feedbackHasBeenAnswered(fb) {
+    const text = fb.textContent || '';
+    return /正確|錯誤|答案|Correct|Wrong|answer/i.test(text) && getAnswerSentence(fb);
+  }
+
   function enhanceFeedback() {
     const fb = document.querySelector('#fb.feedback, .feedback#fb');
     if (!fb) return;
 
     const oldBtn = fb.querySelector('.speak-answer-btn');
-    const sentence = getAnswerSentence(fb);
 
-    // 答題前不要顯示「朗讀答案例句」，避免看起來像提前透露答案。
-    if (!sentence) {
+    if (!feedbackHasBeenAnswered(fb)) {
       if (oldBtn) oldBtn.remove();
       fb.dataset.speechEnhanced = '0';
       return;
@@ -105,11 +109,10 @@
   }
 
   function hidePracticeAnswerInTitle() {
-    // 原本標題會顯示「分層測驗：process」，等於提前顯示答案。
-    // 練習畫面統一改成「分層測驗」，真正要猜的英文不在題目前曝光。
     document.querySelectorAll('.panel h2').forEach(h2 => {
-      if (/^分層測驗：/.test(h2.textContent.trim())) {
-        h2.textContent = '分層測驗';
+      const text = h2.textContent.trim();
+      if (/^分層測[驗量]\s*[:：]/.test(text) || /^分层测[验量]\s*[:：]/.test(text)) {
+        h2.textContent = text.includes('分层') ? '分层测验' : '分層測驗';
       }
     });
   }
@@ -129,7 +132,7 @@
         } else {
           let candidate = arr[Math.floor(Math.random() * arr.length)];
           let guard = 0;
-          while (candidate.word === state.selected && guard < 12) {
+          while (candidate.word === state.selected && guard < 20) {
             candidate = arr[Math.floor(Math.random() * arr.length)];
             guard++;
           }
@@ -152,7 +155,9 @@
   }
 
   const observer = new MutationObserver(() => enhance());
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   document.addEventListener('DOMContentLoaded', enhance);
+  window.addEventListener('load', enhance);
+  setInterval(enhance, 800);
   enhance();
 })();
