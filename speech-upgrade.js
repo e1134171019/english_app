@@ -117,6 +117,25 @@
     });
   }
 
+  function installRenderPracticePatch() {
+    if (window.__vocabRenderPracticePatched) return;
+    if (typeof renderPractice !== 'function') return;
+
+    const originalRenderPractice = renderPractice;
+    window.__vocabRenderPracticePatched = true;
+    window.renderPractice = function (...args) {
+      const result = originalRenderPractice.apply(this, args);
+      // 同一個事件迴圈內立刻改掉，避免下一頁時答案英文先閃一下。
+      hidePracticeAnswerInTitle();
+      enhanceFeedback();
+      requestAnimationFrame(() => {
+        hidePracticeAnswerInTitle();
+        enhanceFeedback();
+      });
+      return result;
+    };
+  }
+
   function installRandomNextPatch() {
     if (window.__vocabRandomNextPatched) return;
     if (typeof nextWord !== 'function' || typeof renderPractice !== 'function') return;
@@ -140,7 +159,7 @@
         }
 
         if (typeof save === 'function') save();
-        renderPractice();
+        window.renderPractice();
       } catch (error) {
         console.warn('Random next patch failed:', error);
       }
@@ -148,10 +167,11 @@
   }
 
   function enhance() {
+    installRenderPracticePatch();
+    installRandomNextPatch();
     enhanceExamples();
     enhanceFeedback();
     hidePracticeAnswerInTitle();
-    installRandomNextPatch();
   }
 
   const observer = new MutationObserver(() => enhance());
