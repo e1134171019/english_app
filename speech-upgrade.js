@@ -73,26 +73,82 @@
     }
   }
 
+  function getAnswerSentence(fb) {
+    const lines = fb.textContent.split('\n').map(x => x.trim()).filter(Boolean);
+    return lines.find(x => /^[A-Za-z0-9'\"].*[.!?]$/.test(x));
+  }
+
   function enhanceFeedback() {
     const fb = document.querySelector('#fb.feedback, .feedback#fb');
-    if (!fb || fb.dataset.speechEnhanced === '1') return;
+    if (!fb) return;
+
+    const oldBtn = fb.querySelector('.speak-answer-btn');
+    const sentence = getAnswerSentence(fb);
+
+    // 答題前不要顯示「朗讀答案例句」，避免看起來像提前透露答案。
+    if (!sentence) {
+      if (oldBtn) oldBtn.remove();
+      fb.dataset.speechEnhanced = '0';
+      return;
+    }
+
+    if (oldBtn) return;
+
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'speak-sentence-btn';
+    btn.className = 'speak-sentence-btn speak-answer-btn';
     btn.textContent = '🔊 朗讀答案例句';
     btn.style.float = 'none';
-    btn.addEventListener('click', () => {
-      const lines = fb.textContent.split('\n').map(x => x.trim()).filter(Boolean);
-      const sentence = lines.find(x => /^[A-Za-z0-9'\"].*[.!?]$/.test(x));
-      if (sentence) speak(sentence);
-    });
+    btn.addEventListener('click', () => speak(getAnswerSentence(fb)));
     fb.prepend(btn);
     fb.dataset.speechEnhanced = '1';
+  }
+
+  function hidePracticeAnswerInTitle() {
+    // 原本標題會顯示「分層測驗：process」，等於提前顯示答案。
+    // 練習畫面統一改成「分層測驗」，真正要猜的英文不在題目前曝光。
+    document.querySelectorAll('.panel h2').forEach(h2 => {
+      if (/^分層測驗：/.test(h2.textContent.trim())) {
+        h2.textContent = '分層測驗';
+      }
+    });
+  }
+
+  function installRandomNextPatch() {
+    if (window.__vocabRandomNextPatched) return;
+    if (typeof nextWord !== 'function' || typeof renderPractice !== 'function') return;
+
+    window.__vocabRandomNextPatched = true;
+    window.nextWord = function () {
+      try {
+        const arr = typeof filtered === 'function' ? filtered() : (typeof words !== 'undefined' ? words : []);
+        if (!arr || arr.length === 0) return;
+
+        if (arr.length === 1) {
+          state.selected = arr[0].word;
+        } else {
+          let candidate = arr[Math.floor(Math.random() * arr.length)];
+          let guard = 0;
+          while (candidate.word === state.selected && guard < 12) {
+            candidate = arr[Math.floor(Math.random() * arr.length)];
+            guard++;
+          }
+          state.selected = candidate.word;
+        }
+
+        if (typeof save === 'function') save();
+        renderPractice();
+      } catch (error) {
+        console.warn('Random next patch failed:', error);
+      }
+    };
   }
 
   function enhance() {
     enhanceExamples();
     enhanceFeedback();
+    hidePracticeAnswerInTitle();
+    installRandomNextPatch();
   }
 
   const observer = new MutationObserver(() => enhance());
