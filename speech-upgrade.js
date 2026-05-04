@@ -125,7 +125,6 @@
     window.__vocabRenderPracticePatched = true;
     window.renderPractice = function (...args) {
       const result = originalRenderPractice.apply(this, args);
-      // 同一個事件迴圈內立刻改掉，避免下一頁時答案英文先閃一下。
       hidePracticeAnswerInTitle();
       enhanceFeedback();
       requestAnimationFrame(() => {
@@ -166,9 +165,42 @@
     };
   }
 
+  function installGrammarSequentialShufflePatch() {
+    if (window.__grammarSequentialShufflePatched) return;
+    if (!location.pathname.includes('/vocab-lab/grammar.html')) return;
+    if (typeof pool !== 'function' || typeof render !== 'function') return;
+
+    window.__grammarSequentialShufflePatched = true;
+
+    const originalPool = window.pool;
+    const sessionPools = new Map();
+    const shuffleOnce = arr => [...arr].sort(() => Math.random() - 0.5);
+    const keyOf = arr => {
+      if (!arr || !arr.length) return 'empty';
+      const first = arr[0] || {};
+      const last = arr[arr.length - 1] || {};
+      return `${arr.length}|${first.unit || ''}|${last.unit || ''}|${first.q || ''}|${last.q || ''}`;
+    };
+
+    window.pool = function () {
+      const arr = originalPool();
+      const key = keyOf(arr);
+      if (!sessionPools.has(key)) sessionPools.set(key, shuffleOnce(arr));
+      return sessionPools.get(key);
+    };
+
+    const title = document.querySelector('.brand p');
+    if (title) {
+      title.textContent = '考試實戰版：每次重新整理會先把題目洗牌；接著按「下一題」會照本次洗牌後的順序依序出題。';
+    }
+
+    if (typeof render === 'function') render();
+  }
+
   function enhance() {
     installRenderPracticePatch();
     installRandomNextPatch();
+    installGrammarSequentialShufflePatch();
     enhanceExamples();
     enhanceFeedback();
     hidePracticeAnswerInTitle();
