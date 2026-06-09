@@ -1,4 +1,4 @@
-const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260609-unit09';
+const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260609-unit10';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
