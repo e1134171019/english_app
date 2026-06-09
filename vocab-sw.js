@@ -1,11 +1,15 @@
-const SPEECH_SCRIPT = '/english_app/speech-upgrade.js';
+const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260609-unit08';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', event => {
@@ -18,7 +22,8 @@ self.addEventListener('fetch', event => {
   if (!url.pathname.endsWith('/') && !url.pathname.endsWith('.html')) return;
 
   event.respondWith((async () => {
-    const response = await fetch(request);
+    const freshRequest = new Request(request, { cache: 'reload' });
+    const response = await fetch(freshRequest);
     const type = response.headers.get('content-type') || '';
     if (!type.includes('text/html')) return response;
 
@@ -30,7 +35,7 @@ self.addEventListener('fetch', event => {
     return new Response(html, {
       status: response.status,
       statusText: response.statusText,
-      headers: { 'content-type': 'text/html; charset=utf-8' }
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
     });
   })());
 });
