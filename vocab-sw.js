@@ -1,5 +1,7 @@
-const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260707-toeic-part5';
-const TOEIC_SCRIPT = '/english_app/vocab-lab/toeic-part5-upgrade.js?v=20260707-toeic-part5';
+const ASSET_VERSION = '20260708-toeic-smart-options-v1';
+const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
+const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
+const TOEIC_FAMILY_SCRIPT = `/english_app/vocab-lab/toeic-part5-family-fix.js?v=${ASSET_VERSION}`;
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -23,22 +25,24 @@ self.addEventListener('fetch', event => {
   if (!url.pathname.endsWith('/') && !url.pathname.endsWith('.html')) return;
 
   event.respondWith((async () => {
-    const freshRequest = new Request(request, { cache: 'reload' });
+    const freshRequest = new Request(request, {cache: 'reload'});
     const response = await fetch(freshRequest);
     const type = response.headers.get('content-type') || '';
     if (!type.includes('text/html')) return response;
 
     let html = await response.text();
 
-    if (!html.includes(SPEECH_SCRIPT)) {
+    if (!html.includes('/english_app/speech-upgrade.js')) {
       html = html.replace('</body>', `<script src="${SPEECH_SCRIPT}"></script></body>`);
     }
 
-    if (
-      url.pathname.endsWith('/vocab-lab/comprehensive.html') &&
-      !html.includes(TOEIC_SCRIPT)
-    ) {
-      html = html.replace('</body>', `<script src="${TOEIC_SCRIPT}"></script></body>`);
+    if (url.pathname.endsWith('/vocab-lab/comprehensive.html')) {
+      if (!html.includes('/english_app/vocab-lab/toeic-part5-upgrade.js')) {
+        html = html.replace('</body>', `<script src="${TOEIC_SCRIPT}"></script></body>`);
+      }
+      if (!html.includes('/english_app/vocab-lab/toeic-part5-family-fix.js')) {
+        html = html.replace('</body>', `<script src="${TOEIC_FAMILY_SCRIPT}"></script></body>`);
+      }
     }
 
     return new Response(html, {
