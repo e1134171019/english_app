@@ -1,43 +1,448 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vocabulary Lab 綜合練習</title><style>:root{--bg:#f5f7fb;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--shadow:0 18px 55px rgba(15,23,42,.1)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}button,input{font:inherit}button{border:0;cursor:pointer}.app{max-width:1020px;margin:0 auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}.top a{color:#2563eb;font-weight:900;text-decoration:none}.brand h1{margin:0;font-size:32px;letter-spacing:-.05em}.brand p{margin:6px 0 0;color:var(--muted);line-height:1.6}.modes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:18px}.mode{border-radius:16px;padding:12px 10px;background:#fff;border:1px solid var(--line);font-weight:900;color:var(--muted)}.mode.active{background:#111827;color:#fff}.stat{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.pill{border-radius:999px;background:#eef2ff;color:#1d4ed8;padding:8px 12px;font-weight:900}.panel{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)}.qcard{background:#111827;color:#fff;border-radius:24px;padding:24px;margin-bottom:14px}.qcard small{color:#cbd5e1;font-weight:900}.q{font-size:30px;line-height:1.35;font-weight:950;margin:10px 0 0}.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt{border-radius:16px;padding:15px;background:#fff;border:1px solid var(--line);font-weight:900;text-align:left}.opt.correct{background:#dcfce7;color:#166534;border-color:#86efac}.opt.wrong{background:#ffe4e6;color:#be123c;border-color:#fda4af}.input{width:100%;border:1px solid var(--line);border-radius:16px;padding:14px;font-size:20px;font-weight:900}.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.btn{border-radius:16px;padding:14px;font-weight:900;background:#e5e7eb}.primary{background:var(--blue);color:#fff}.feedback{margin-top:14px;border-radius:18px;padding:14px;background:#f9fafb;border:1px solid var(--line);white-space:pre-wrap;line-height:1.7}.list{display:grid;gap:10px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);border-radius:18px;padding:14px}.row strong{font-size:20px}.row span{color:var(--muted);font-size:14px;line-height:1.55}@media(max-width:860px){.modes{grid-template-columns:1fr 1fr}.options,.btns{grid-template-columns:1fr}.q{font-size:25px}.panel{padding:18px;border-radius:22px}.top{align-items:flex-start;flex-direction:column}}</style></head><body><main class="app"><header class="top"><div class="brand"><h1>綜合練習</h1><p>Unit 01 + Unit 02 + Unit 03 考前整合：新增「1-3課選擇題」，另外保留快速測驗、例句填空、字族挑戰、近反義詞挑戰與錯題複習。</p></div><a href="./">回選單</a></header><nav class="modes"><button class="mode active" data-mode="choice123">1-3課選擇題</button><button class="mode" data-mode="quick">快速測驗</button><button class="mode" data-mode="cloze">例句填空</button><button class="mode" data-mode="family">字族挑戰</button><button class="mode" data-mode="semantic">近反義詞</button><button class="mode" data-mode="wrong">錯題複習</button></nav><section class="stat"><span class="pill" id="score">0 correct</span><span class="pill" id="count">0 / 0</span><span class="pill" id="modeName">1-3課選擇題</span></section><section class="panel" id="app"></section></main><script>
-const words=[
-{u:'Unit 01',w:'unite',z:'使聯合；團結',e:'Our goal is to unite the labor unions to oppose the new policy.',t:'我們的目標是聯合這些勞工團體反對這項新政策。',family:['unity','union','united'],syn:['join','combine'],ant:['divide','separate']},
-{u:'Unit 01',w:'remain',z:'繼續存在；仍是',e:'The problem still remains unsolved.',t:'這個問題仍然一直沒被解決。',family:['remaining','remains'],syn:['stay','continue'],ant:['leave','disappear']},
-{u:'Unit 01',w:'probable',z:'很可能的',e:'It seems probable that this accident is the result of the driver\'s carelessness.',t:'看來意外很可能是因為駕駛的粗心所致。',family:['probability','probably'],syn:['likely'],ant:['unlikely']},
-{u:'Unit 01',w:'determine',z:'決定；確定',e:'The police were finally able to determine the cause of the accident.',t:'警方終於能確定這起意外的肇因了。',family:['determined','determination'],syn:['decide','resolve'],ant:[]},
-{u:'Unit 01',w:'recognize',z:'認出；承認；認可',e:'Jack cannot recognize his daughter.',t:'傑克認不出他的女兒來了。',family:['recognition','recognizable'],syn:['identify','acknowledge'],ant:[]},
-{u:'Unit 01',w:'unique',z:'與眾不同的；獨有的',e:'Every person\'s fingerprints are unique.',t:'每個人的指紋都是獨一無二的。',family:[],syn:['special','distinctive'],ant:['common']},
-{u:'Unit 01',w:'costly',z:'昂貴的；代價高的',e:'Money is hard to earn, so I never buy costly clothes.',t:'錢很難賺，因此我絕不買昂貴的衣服。',family:['cost'],syn:['expensive'],ant:['cheap']},
-{u:'Unit 01',w:'jealous',z:'嫉妒的；吃醋的',e:'Why are you so jealous of David\'s promotion?',t:'為什麼大衛升遷你會那麼嫉妒？',family:['jealousy'],syn:['envious'],ant:[]},
-{u:'Unit 01',w:'locate',z:'位於；找到位置；設置',e:'Our school is located in that area.',t:'我們學校位在那個區域。',family:['location','located'],syn:['find','situate'],ant:[]},
-{u:'Unit 01',w:'career',z:'職業；終身職業的',e:'Ms. Wilson took up photography as her career.',t:'魏爾遜女士以攝影作為她的終身職業。',family:['career woman'],syn:['profession'],ant:[]},
-{u:'Unit 02',w:'permit',z:'准許；允許；許可證',e:'We are not permitted to smoke here.',t:'我們不能在此地抽菸。',family:['permission','permissive','permissible'],syn:['allow'],ant:['ban','prohibit']},
-{u:'Unit 02',w:'volume',z:'量；容量；冊；音量',e:'The volume of traffic reaches its peak during rush hour.',t:'交通流量在上下班尖峰時間會達到高峰。',family:['turn the volume down'],syn:['amount','capacity'],ant:[]},
-{u:'Unit 02',w:'represent',z:'代表；象徵',e:'George represented his company at the press conference.',t:'喬治代表公司出席記者會。',family:['representative','representation'],syn:['symbolize'],ant:[]},
-{u:'Unit 02',w:'attitude',z:'態度',e:'Tony has a positive attitude towards life.',t:'東尼對人生持積極的態度。',family:['attitude toward'],syn:['view','mindset'],ant:[]},
-{u:'Unit 02',w:'reduce',z:'使減少；使淪為',e:'Despite Andy\'s pay cut, he won\'t reduce his standard of living.',t:'儘管安迪被減薪，他仍不願降低他的生活水準。',family:['reduction'],syn:['decrease'],ant:['increase']},
-{u:'Unit 02',w:'fake',z:'假的；贗品；偽造；假裝',e:'Brian was caught using fake money.',t:'布萊恩因為使用假鈔被抓。',family:['faked'],syn:['false','counterfeit'],ant:['genuine']},
-{u:'Unit 02',w:'strength',z:'力量；優點',e:'Operating this machine requires skill more than physical strength.',t:'操作這臺機器需要的技巧比體力還多。',family:['strong','strengthen'],syn:['power','advantage'],ant:['weakness']},
-{u:'Unit 02',w:'weakness',z:'虛弱；弱點',e:'Math is my weakness, but music is my forte.',t:'數學是我的弱項，不過音樂卻是我的強項。',family:['weak','weaken'],syn:['shortcoming'],ant:['strength']},
-{u:'Unit 02',w:'prevent',z:'阻止；預防；避免',e:'Taking necessary precautions will prevent many accidents from happening.',t:'採取必要的預防措施能防止許多意外的發生。',family:['prevention','preventive'],syn:['avoid','stop'],ant:['cause']},
-{u:'Unit 02',w:'achieve',z:'達成；達到',e:'If you work hard, you will eventually achieve your goals.',t:'如果你努力，最後終將達成目標。',family:['achievement','accomplishment'],syn:['accomplish','attain'],ant:['fail']},
-{u:'Unit 03',w:'react',z:'反應',e:'Ted reacted calmly to the plaintiff\'s accusation.',t:'泰德對原告的指控反應冷靜。',family:['reaction'],syn:['respond'],ant:[]},
-{u:'Unit 03',w:'fund',z:'基金；資金；提供資金',e:'We contributed to the charity fund.',t:'我們捐款給這個慈善基金。',family:['fundraiser','funded'],syn:['finance'],ant:[]},
-{u:'Unit 03',w:'audience',z:'觀眾',e:'The concert drew a large audience.',t:'那場演唱會吸引了很多的觀眾。',family:['spectator'],syn:['viewers'],ant:[]},
-{u:'Unit 03',w:'moral',z:'道德的；寓意',e:'The film has a good moral lesson.',t:'這部影片有個很好的教訓，要我們明辨是非。',family:['morality','immoral'],syn:['ethical'],ant:['immoral']},
-{u:'Unit 03',w:'announce',z:'公布；宣布',e:'John will announce who will play the characters in the play.',t:'約翰會公布該戲劇中的角色由哪些人擔綱。',family:['announcement'],syn:['declare'],ant:[]},
-{u:'Unit 03',w:'theory',z:'學說；理論',e:'Many scientists believe the theory that the universe is getting larger.',t:'很多科學家相信宇宙正在變大的這個說法。',family:['theoretical'],syn:['hypothesis'],ant:['practice']},
-{u:'Unit 03',w:'structure',z:'結構；建築物',e:'The structure of the poem is very complicated.',t:'這首詩的結構很複雜。',family:['structural'],syn:['framework'],ant:[]},
-{u:'Unit 03',w:'staff',z:'職員；為……配備人員',e:'Our company has a staff of 500, working in both Canada and Taiwan.',t:'我們公司有五百名員工，分別在加拿大與臺灣工作。',family:['staff members'],syn:['employees'],ant:[]},
-{u:'Unit 03',w:'suffer',z:'遭受；受苦',e:'That company suffered a big loss because of poor management.',t:'那家公司由於管理不善蒙受重大損失。',family:['suffer from'],syn:['endure'],ant:[]},
-{u:'Unit 03',w:'spite',z:'怨恨；恨意；儘管',e:'Jason vandalized those cars out of spite.',t:'傑森因怨恨而任意破壞那些車子。',family:['in spite of','despite'],syn:['malice'],ant:[]},
-{u:'Unit 03',w:'original',z:'原來的；原創的；原著',e:'The original plan was later changed.',t:'最初的計畫後來有所更動。',family:['originally','origin'],syn:['initial'],ant:['eventually']},
-{u:'Unit 03',w:'additional',z:'額外的；另加的',e:'Additional tables and chairs were required.',t:'需要備用的桌椅。',family:['additionally','addition'],syn:['extra'],ant:[]},
-{u:'Unit 03',w:'advantage',z:'優勢；優點；便利',e:'This book has the advantage of being easy to use.',t:'這本書的優點在於它很容易使用。',family:['disadvantage'],syn:['benefit'],ant:['disadvantage']},
-{u:'Unit 03',w:'specific',z:'特定的；明確的',e:'The man went there for a specific purpose.',t:'那名男子到那兒去是有特定的目的。',family:['specifically','specify'],syn:['particular'],ant:['general']},
-{u:'Unit 03',w:'destroy',z:'毀壞；破壞',e:'The typhoon destroyed the whole area.',t:'颱風把這一帶全部摧毀了。',family:['destruction','destructive'],syn:['damage','ruin'],ant:['restore']},
-{u:'Unit 03',w:'mission',z:'任務',e:'Rumor has it that Michael is on a secret mission in Syria.',t:'謠傳麥可正在敘利亞執行一項祕密任務。',family:['missionary'],syn:['task'],ant:[]},
-{u:'Unit 03',w:'anxious',z:'焦慮的；渴望的',e:'College students are anxious about their future.',t:'大學生對前途感到焦慮不安。',family:['anxiety','anxiously'],syn:['worried','eager'],ant:['calm']},
-{u:'Unit 03',w:'lock',z:'鎖；鎖好',e:'Always make sure that the door is locked when you leave.',t:'離開時務必要確認門是上鎖的。',family:['lockable','locker','unlock'],syn:['secure'],ant:['unlock']},
-{u:'Unit 03',w:'neat',z:'整齊的；整潔的',e:'Judy\'s handwriting is very neat.',t:'茱蒂的筆跡非常整齊。',family:['tidy'],syn:['tidy'],ant:['sloppy','untidy']}
-];
-let mode='choice123',i=0,score=0,wrong=JSON.parse(localStorage.getItem('mixed_wrong')||'[]');const $=s=>document.querySelector(s);function shuffle(a){return[...a].sort(()=>Math.random()-.5)}function cur(){return words[i%words.length]}function opts(ans,list){return shuffle([ans,...shuffle(list.filter(x=>x&&x!==ans)).slice(0,3)])}function randomWord(){i=Math.floor(Math.random()*words.length)}function setTop(){document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));$('#score').textContent=`${score} correct`;$('#count').textContent=`${i+1} / ${words.length}`;$('#modeName').textContent={choice123:'1-3課選擇題',quick:'快速測驗',cloze:'例句填空',family:'字族挑戰',semantic:'近反義詞',wrong:'錯題複習'}[mode]}function qdata(){let x=cur(),pool=words.map(w=>w.w),zpool=words.map(w=>w.z);if(mode==='choice123'){return Math.random()>.5?{type:'choice',label:`${x.u}｜1-3課選擇題：英選中`,q:`${x.w} 的中文意思是？`,ans:x.z,opts:opts(x.z,zpool)}:{type:'choice',label:`${x.u}｜1-3課選擇題：中選英`,q:`${x.z} 的英文是？`,ans:x.w,opts:opts(x.w,pool)}}if(mode==='quick')return Math.random()>.5?{type:'choice',label:`${x.u}｜英選中`,q:`${x.w} 的中文意思是？`,ans:x.z,opts:opts(x.z,zpool)}:{type:'input',label:`${x.u}｜主動輸出`,q:`請輸入英文：${x.z}`,ans:x.w};if(mode==='cloze')return{type:'choice',label:`${x.u}｜例句填空`,q:x.e.replace(new RegExp('\\b'+x.w+'s?\\b','i'),'______'),ans:x.w,opts:opts(x.w,pool)};if(mode==='family'){let fam=x.family[0]||x.w;return{type:'choice',label:`${x.u}｜字族挑戰`,q:`請選出與 ${x.w} 同字族/相關延伸的單字`,ans:fam,opts:opts(fam,pool.concat(words.flatMap(w=>w.family)))}}let arr=x.ant.length?x.ant:x.syn;let ans=arr[0]||x.w;return{type:'choice',label:`${x.u}｜近反義詞挑戰`,q:x.ant.length?`請選出 ${x.w} 的反義詞`:`請選出 ${x.w} 的近義詞`,ans,opts:opts(ans,pool.concat(words.flatMap(w=>w.ant),words.flatMap(w=>w.syn)))}}function render(){setTop();if(mode==='wrong')return renderWrong();let q=qdata(),x=cur();$('#app').innerHTML=`<div class="qcard"><small>${q.label}</small><p class="q">${q.q}</p></div>${q.type==='choice'?`<div class="options">${q.opts.map(o=>`<button class="opt" onclick='checkChoice(this,${JSON.stringify(o)})'>${o}</button>`).join('')}</div>`:`<input id="answer" class="input" placeholder="輸入英文單字"><div class="btns"><button class="btn primary" onclick="checkInput()">檢查</button><button class="btn" onclick="next()">跳過</button></div>`}<div class="feedback" id="fb">答題後會顯示完整例句。答錯會加入錯題複習。</div>`;if($('#answer'))$('#answer').focus()}function markWrong(x,kind){if(!wrong.some(w=>w.w===x.w&&w.kind===kind)){wrong.unshift({w:x.w,z:x.z,u:x.u,e:x.e,t:x.t,kind});localStorage.setItem('mixed_wrong',JSON.stringify(wrong))}}function checkChoice(btn,val){let q=qdata(),x=cur();document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.textContent===q.ans)b.classList.add('correct')});if(val===q.ans){btn.classList.add('correct');score++;$('#fb').textContent=`正確\n${x.e}\n${x.t}`}else{btn.classList.add('wrong');markWrong(x,q.label);$('#fb').textContent=`錯誤。答案：${q.ans}\n${x.e}\n${x.t}`}setTimeout(next,1000)}function checkInput(){let q=qdata(),x=cur(),v=$('#answer').value.trim().toLowerCase();if(v===q.ans.toLowerCase()){score++;$('#fb').textContent=`正確\n${x.e}\n${x.t}`}else{markWrong(x,q.label);$('#fb').textContent=`錯誤。答案：${q.ans}\n${x.e}\n${x.t}`}setTimeout(next,1100)}function next(){randomWord();render()}function renderWrong(){setTop();$('#app').innerHTML=wrong.length?`<h2>錯題複習</h2><div class="list">${wrong.map(x=>`<div class="row"><div><strong>${x.w}</strong><br><span>${x.u}｜${x.z}<br>${x.kind}<br>${x.e}<br>${x.t}</span></div></div>`).join('')}</div><div class="btns"><button class="btn" onclick="wrong=[];localStorage.removeItem('mixed_wrong');renderWrong()">清空錯題</button><button class="btn primary" onclick="mode='choice123';render()">回 1-3 課選擇題</button></div>`:'<div class="feedback">目前沒有錯題。答錯後會自動加入這裡。</div>'}document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;randomWord();render()});randomWord();render();</script></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vocabulary Lab 綜合練習</title>
+  <style>
+    :root{--bg:#f5f7fb;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--shadow:0 18px 55px rgba(15,23,42,.1)}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
+    button,input{font:inherit}button{border:0;cursor:pointer}.app{max-width:1020px;margin:0 auto;padding:18px}
+    .top{display:flex;justify-content:space-between;gap:12px;align-items:center}.top a{color:#2563eb;font-weight:900;text-decoration:none}
+    .brand h1{margin:0;font-size:32px;letter-spacing:-.05em}.brand p{margin:6px 0 0;color:var(--muted);line-height:1.6}
+    .unitPanel{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
+    .unitHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.unitHead h2{margin:0;font-size:20px}.unitHead p{margin:5px 0 0;color:var(--muted);line-height:1.55}
+    .unitChoices{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:14px}
+    .unitToggle{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:11px;background:#fff;font-weight:900;cursor:pointer;user-select:none}
+    .unitToggle.selected{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}.unitToggle input{accent-color:#2563eb;width:17px;height:17px}
+    .unitActions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.smallBtn{border-radius:13px;padding:10px 14px;background:#e5e7eb;font-weight:900}.smallBtn.primary{background:var(--blue);color:#fff}
+    .scope{margin-top:12px;border-radius:14px;background:#f8fafc;border:1px solid var(--line);padding:11px 13px;color:#475569;font-weight:800;line-height:1.55}
+    .scope.error{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+    .modes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:18px}.mode{border-radius:16px;padding:12px 10px;background:#fff;border:1px solid var(--line);font-weight:900;color:var(--muted)}.mode.active{background:#111827;color:#fff}
+    .stat{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.pill{border-radius:999px;background:#eef2ff;color:#1d4ed8;padding:8px 12px;font-weight:900}
+    .panel{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)}
+    .qcard{background:#111827;color:#fff;border-radius:24px;padding:24px;margin-bottom:14px}.qcard small{color:#cbd5e1;font-weight:900}.q{font-size:30px;line-height:1.35;font-weight:950;margin:10px 0 0}
+    .options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt{border-radius:16px;padding:15px;background:#fff;border:1px solid var(--line);font-weight:900;text-align:left}.opt.correct{background:#dcfce7;color:#166534;border-color:#86efac}.opt.wrong{background:#ffe4e6;color:#be123c;border-color:#fda4af}
+    .input{width:100%;border:1px solid var(--line);border-radius:16px;padding:14px;font-size:20px;font-weight:900}.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.btn{border-radius:16px;padding:14px;font-weight:900;background:#e5e7eb}.primary{background:var(--blue);color:#fff}
+    .feedback{margin-top:14px;border-radius:18px;padding:14px;background:#f9fafb;border:1px solid var(--line);white-space:pre-wrap;line-height:1.7}.list{display:grid;gap:10px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);border-radius:18px;padding:14px}.row strong{font-size:20px}.row span{color:var(--muted);font-size:14px;line-height:1.55}
+    .loading{text-align:center;padding:34px 10px;color:var(--muted);font-weight:900}
+    @media(max-width:860px){.modes{grid-template-columns:1fr 1fr}.unitChoices{grid-template-columns:repeat(2,1fr)}.options,.btns{grid-template-columns:1fr}.q{font-size:25px}.panel{padding:18px;border-radius:22px}.top{align-items:flex-start;flex-direction:column}}
+    @media(max-width:520px){.unitChoices{grid-template-columns:1fr}.unitActions{display:grid;grid-template-columns:1fr 1fr}.unitActions .primary{grid-column:1/-1}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>綜合練習</h1>
+      <p>自選 Unit 01～Unit 10；套用後，所有測驗模式只會從已選課別出題。</p>
+    </div>
+    <a href="./">回選單</a>
+  </header>
+
+  <section class="unitPanel">
+    <div class="unitHead">
+      <div>
+        <h2>選擇練習課別</h2>
+        <p>可單選或複選；系統會記住你最後一次套用的組合。</p>
+      </div>
+    </div>
+    <div class="unitChoices" id="unitChoices"></div>
+    <div class="unitActions">
+      <button class="smallBtn" id="selectAll" type="button">全選</button>
+      <button class="smallBtn" id="clearAll" type="button">清除</button>
+      <button class="smallBtn primary" id="applyUnits" type="button">套用課別</button>
+    </div>
+    <div class="scope" id="scopeText">正在準備題庫……</div>
+  </section>
+
+  <nav class="modes">
+    <button class="mode active" data-mode="choice">中英選擇題</button>
+    <button class="mode" data-mode="quick">快速測驗</button>
+    <button class="mode" data-mode="cloze">例句填空</button>
+    <button class="mode" data-mode="family">字族挑戰</button>
+    <button class="mode" data-mode="semantic">近反義詞</button>
+    <button class="mode" data-mode="wrong">錯題複習</button>
+  </nav>
+
+  <section class="stat">
+    <span class="pill" id="score">0 correct</span>
+    <span class="pill" id="count">0 / 0</span>
+    <span class="pill" id="modeName">中英選擇題</span>
+  </section>
+  <section class="panel" id="app"><div class="loading">正在載入題庫……</div></section>
+</main>
+
+<script>
+const UNIT_TOTAL = 10;
+const UNIT_STORAGE_KEY = 'vocab_selected_units_v1';
+const WRONG_STORAGE_KEY = 'mixed_wrong';
+const DATA_VERSION = '20260707-custom-units-v1';
+
+let mode = 'choice';
+let score = 0;
+let selectedUnits = readSelectedUnits();
+let words = [];
+let deck = [];
+let deckPosition = 0;
+let currentQuestion = null;
+let loading = false;
+let wrong = readWrongItems();
+const unitCache = new Map();
+const $ = selector => document.querySelector(selector);
+
+function readSelectedUnits(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(UNIT_STORAGE_KEY) || 'null');
+    if(Array.isArray(saved)){
+      const valid = [...new Set(saved.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= UNIT_TOTAL))].sort((a,b)=>a-b);
+      if(valid.length) return valid;
+    }
+  }catch(error){ console.warn('Unable to read selected units', error); }
+  return [1,2,3];
+}
+
+function readWrongItems(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(WRONG_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  }catch(error){
+    return [];
+  }
+}
+
+function unitLabel(no){ return `Unit ${String(no).padStart(2,'0')}`; }
+function shuffle(items){ return [...items].sort(() => Math.random() - 0.5); }
+function unique(items){ return [...new Set((items || []).filter(Boolean).map(String))]; }
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+}
+function escapeRegExp(value){ return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function buildUnitSelector(){
+  $('#unitChoices').innerHTML = Array.from({length:UNIT_TOTAL},(_,index)=>index+1).map(no => `
+    <label class="unitToggle${selectedUnits.includes(no)?' selected':''}">
+      <input type="checkbox" value="${no}" ${selectedUnits.includes(no)?'checked':''}>
+      ${unitLabel(no)}
+    </label>`).join('');
+
+  $('#unitChoices').addEventListener('change', event => {
+    const label = event.target.closest('.unitToggle');
+    if(label) label.classList.toggle('selected', event.target.checked);
+  });
+
+  $('#selectAll').onclick = () => setAllUnitChecks(true);
+  $('#clearAll').onclick = () => setAllUnitChecks(false);
+  $('#applyUnits').onclick = applyCheckedUnits;
+}
+
+function setAllUnitChecks(checked){
+  document.querySelectorAll('#unitChoices input').forEach(input => {
+    input.checked = checked;
+    input.closest('.unitToggle').classList.toggle('selected', checked);
+  });
+}
+
+function checkedUnits(){
+  return [...document.querySelectorAll('#unitChoices input:checked')].map(input => Number(input.value)).sort((a,b)=>a-b);
+}
+
+function extractWordsArray(source){
+  const token = /const\s+words\s*=\s*/.exec(source);
+  if(!token) throw new Error('找不到 const words 題庫');
+  const start = source.indexOf('[', token.index + token[0].length);
+  if(start < 0) throw new Error('找不到題庫陣列起點');
+
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  for(let index = start; index < source.length; index++){
+    const char = source[index];
+    if(quote){
+      if(escaped){ escaped = false; continue; }
+      if(char === '\\'){ escaped = true; continue; }
+      if(char === quote) quote = null;
+      continue;
+    }
+    if(char === "'" || char === '"' || char === '`'){ quote = char; continue; }
+    if(char === '[') depth++;
+    if(char === ']'){
+      depth--;
+      if(depth === 0){
+        const literal = source.slice(start, index + 1);
+        return Function(`"use strict";return (${literal});`)();
+      }
+    }
+  }
+  throw new Error('題庫陣列不完整');
+}
+
+function normalizeWord(item, unitNo){
+  const examples = Array.isArray(item.ex) ? item.ex : [];
+  const firstExample = Array.isArray(examples[0]) ? examples[0] : ['', ''];
+  const word = item.word || item.w || '';
+  const zh = item.zh || item.z || '';
+  const related = unique([...(item.related || []), ...(item.forms || []), ...(item.family || [])]);
+  return {
+    u: unitLabel(unitNo),
+    unitNo,
+    w: String(word).trim(),
+    z: String(zh).trim(),
+    e: String(firstExample[0] || item.e || '').trim(),
+    t: String(firstExample[1] || item.t || '').trim(),
+    family: related,
+    syn: unique(item.syn || []),
+    ant: unique(item.ant || [])
+  };
+}
+
+async function loadUnit(unitNo){
+  if(unitCache.has(unitNo)) return unitCache.get(unitNo);
+  const id = String(unitNo).padStart(2,'0');
+  const response = await fetch(`../unit${id}-vocab-lab/index.html?v=${DATA_VERSION}`, {cache:'no-store'});
+  if(!response.ok) throw new Error(`${unitLabel(unitNo)} 載入失敗（HTTP ${response.status}）`);
+  const source = await response.text();
+  const rawWords = extractWordsArray(source);
+  if(!Array.isArray(rawWords)) throw new Error(`${unitLabel(unitNo)} 題庫格式錯誤`);
+  const normalized = rawWords.map(item => normalizeWord(item, unitNo)).filter(item => item.w && item.z);
+  if(!normalized.length) throw new Error(`${unitLabel(unitNo)} 沒有可用單字`);
+  unitCache.set(unitNo, normalized);
+  return normalized;
+}
+
+async function applyCheckedUnits(){
+  const units = checkedUnits();
+  if(!units.length){
+    setScope('至少選擇一個 Unit 才能開始。', true);
+    return;
+  }
+  await applyUnits(units);
+}
+
+async function applyUnits(units){
+  if(loading) return;
+  loading = true;
+  setScope(`正在載入：${units.map(unitLabel).join(' + ')}……`);
+  $('#app').innerHTML = '<div class="loading">正在載入所選課別題庫……</div>';
+  $('#applyUnits').disabled = true;
+
+  try{
+    const loaded = await Promise.all(units.map(loadUnit));
+    selectedUnits = units;
+    localStorage.setItem(UNIT_STORAGE_KEY, JSON.stringify(selectedUnits));
+    words = loaded.flat();
+    score = 0;
+    currentQuestion = null;
+    resetDeck();
+    setScope(`目前範圍：${selectedUnits.map(unitLabel).join(' + ')}｜已選 ${selectedUnits.length} 課，共 ${words.length} 個單字`);
+    render();
+  }catch(error){
+    console.error(error);
+    setScope(`題庫載入失敗：${error.message}`, true);
+    $('#app').innerHTML = `<div class="feedback">${escapeHtml(error.message)}<br>請重新整理後再試一次。</div>`;
+  }finally{
+    loading = false;
+    $('#applyUnits').disabled = false;
+  }
+}
+
+function setScope(message, isError=false){
+  $('#scopeText').textContent = message;
+  $('#scopeText').classList.toggle('error', isError);
+}
+
+function resetDeck(){
+  deck = shuffle(words.map((_,index)=>index));
+  deckPosition = 0;
+}
+
+function currentWord(){
+  if(!words.length) return null;
+  if(!deck.length) resetDeck();
+  return words[deck[deckPosition] ?? 0];
+}
+
+function optionSet(answer, pool){
+  const distractors = shuffle(unique(pool).filter(value => value && value !== answer)).slice(0,3);
+  return shuffle([answer, ...distractors]);
+}
+
+function setTop(){
+  document.querySelectorAll('.mode').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+  $('#score').textContent = `${score} correct`;
+  $('#count').textContent = words.length ? `${deckPosition + 1} / ${words.length}` : '0 / 0';
+  $('#modeName').textContent = {
+    choice:'中英選擇題',quick:'快速測驗',cloze:'例句填空',family:'字族挑戰',semantic:'近反義詞',wrong:'錯題複習'
+  }[mode];
+}
+
+function makeQuestion(){
+  const item = currentWord();
+  if(!item) return null;
+  const wordPool = words.map(word => word.w);
+  const zhPool = words.map(word => word.z);
+
+  if(mode === 'choice'){
+    return Math.random() > 0.5
+      ? {type:'choice',label:`${item.u}｜英選中`,q:`${item.w} 的中文意思是？`,ans:item.z,opts:optionSet(item.z,zhPool),item}
+      : {type:'choice',label:`${item.u}｜中選英`,q:`${item.z} 的英文是？`,ans:item.w,opts:optionSet(item.w,wordPool),item};
+  }
+  if(mode === 'quick'){
+    return Math.random() > 0.5
+      ? {type:'choice',label:`${item.u}｜英選中`,q:`${item.w} 的中文意思是？`,ans:item.z,opts:optionSet(item.z,zhPool),item}
+      : {type:'input',label:`${item.u}｜主動輸出`,q:`請輸入英文：${item.z}`,ans:item.w,item};
+  }
+  if(mode === 'cloze'){
+    const pattern = new RegExp(`\\b${escapeRegExp(item.w)}(?:s|es|ed|ing)?\\b`, 'i');
+    let sentence = item.e ? item.e.replace(pattern, '______') : '';
+    if(!sentence || sentence === item.e) sentence = item.e ? `${item.e}\n目標單字：______` : `請填入英文：${item.z}`;
+    return {type:'choice',label:`${item.u}｜例句填空`,q:sentence,ans:item.w,opts:optionSet(item.w,wordPool),item};
+  }
+  if(mode === 'family'){
+    const familyPool = unique(words.flatMap(word => word.family));
+    const answer = item.family.find(value => value !== item.w) || item.w;
+    return {type:'choice',label:`${item.u}｜字族挑戰`,q:`請選出與 ${item.w} 同字族／相關延伸的單字`,ans:answer,opts:optionSet(answer,wordPool.concat(familyPool)),item};
+  }
+
+  const hasAntonym = item.ant.length > 0;
+  const candidates = hasAntonym ? item.ant : item.syn;
+  const answer = candidates[0] || item.w;
+  const semanticPool = wordPool.concat(words.flatMap(word => word.ant), words.flatMap(word => word.syn));
+  return {
+    type:'choice',
+    label:`${item.u}｜近反義詞挑戰`,
+    q:hasAntonym ? `請選出 ${item.w} 的反義詞` : `請選出 ${item.w} 的近義詞`,
+    ans:answer,
+    opts:optionSet(answer,semanticPool),
+    item
+  };
+}
+
+function render(){
+  setTop();
+  if(mode === 'wrong'){
+    renderWrong();
+    return;
+  }
+  if(!words.length){
+    $('#app').innerHTML = '<div class="feedback">尚未載入題庫。</div>';
+    return;
+  }
+
+  currentQuestion = makeQuestion();
+  const question = currentQuestion;
+  $('#app').innerHTML = `
+    <div class="qcard"><small>${escapeHtml(question.label)}</small><p class="q">${escapeHtml(question.q)}</p></div>
+    ${question.type === 'choice'
+      ? `<div class="options">${question.opts.map(option => `<button class="opt" data-value="${escapeHtml(option)}">${escapeHtml(option)}</button>`).join('')}</div>`
+      : `<input id="answer" class="input" placeholder="輸入英文單字" autocomplete="off"><div class="btns"><button class="btn primary" id="checkInput">檢查</button><button class="btn" id="skipQuestion">跳過</button></div>`}
+    <div class="feedback" id="fb">答題後會顯示完整例句。答錯會加入錯題複習。</div>`;
+
+  document.querySelectorAll('.opt').forEach(button => button.onclick = () => checkChoice(button, button.dataset.value));
+  if($('#checkInput')) $('#checkInput').onclick = checkInput;
+  if($('#skipQuestion')) $('#skipQuestion').onclick = nextQuestion;
+  if($('#answer')){
+    $('#answer').focus();
+    $('#answer').addEventListener('keydown', event => { if(event.key === 'Enter') checkInput(); });
+  }
+}
+
+function markWrong(item, kind){
+  if(!wrong.some(entry => entry.w === item.w && entry.u === item.u && entry.kind === kind)){
+    wrong.unshift({w:item.w,z:item.z,u:item.u,e:item.e,t:item.t,kind});
+    localStorage.setItem(WRONG_STORAGE_KEY, JSON.stringify(wrong));
+  }
+}
+
+function exampleFeedback(prefix, question){
+  const example = question.item.e || '此單字目前沒有例句。';
+  const translation = question.item.t || '';
+  return `${prefix}\n${example}${translation ? `\n${translation}` : ''}`;
+}
+
+function checkChoice(button, value){
+  const question = currentQuestion;
+  if(!question) return;
+  document.querySelectorAll('.opt').forEach(option => {
+    option.disabled = true;
+    if(option.dataset.value === question.ans) option.classList.add('correct');
+  });
+  if(value === question.ans){
+    button.classList.add('correct');
+    score++;
+    $('#fb').textContent = exampleFeedback('正確', question);
+  }else{
+    button.classList.add('wrong');
+    markWrong(question.item, question.label);
+    $('#fb').textContent = exampleFeedback(`錯誤。答案：${question.ans}`, question);
+  }
+  setTop();
+  setTimeout(nextQuestion, 1000);
+}
+
+function checkInput(){
+  const question = currentQuestion;
+  if(!question || !$('#answer')) return;
+  const value = $('#answer').value.trim().toLowerCase();
+  $('#answer').disabled = true;
+  if(value === question.ans.toLowerCase()){
+    score++;
+    $('#fb').textContent = exampleFeedback('正確', question);
+  }else{
+    markWrong(question.item, question.label);
+    $('#fb').textContent = exampleFeedback(`錯誤。答案：${question.ans}`, question);
+  }
+  setTop();
+  setTimeout(nextQuestion, 1100);
+}
+
+function nextQuestion(){
+  if(!words.length) return;
+  deckPosition++;
+  if(deckPosition >= deck.length) resetDeck();
+  currentQuestion = null;
+  render();
+}
+
+function wrongUnitNumber(item){
+  const match = String(item.u || '').match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+function renderWrong(){
+  setTop();
+  const filtered = wrong.filter(item => selectedUnits.includes(wrongUnitNumber(item)));
+  $('#app').innerHTML = filtered.length
+    ? `<h2>錯題複習</h2><div class="list">${filtered.map(item => `<div class="row"><div><strong>${escapeHtml(item.w)}</strong><br><span>${escapeHtml(item.u)}｜${escapeHtml(item.z)}<br>${escapeHtml(item.kind)}<br>${escapeHtml(item.e || '')}<br>${escapeHtml(item.t || '')}</span></div></div>`).join('')}</div><div class="btns"><button class="btn" id="clearWrong">清空目前範圍錯題</button><button class="btn primary" id="backPractice">回中英選擇題</button></div>`
+    : '<div class="feedback">目前所選課別沒有錯題。答錯後會自動加入這裡。</div>';
+
+  if($('#clearWrong')) $('#clearWrong').onclick = () => {
+    wrong = wrong.filter(item => !selectedUnits.includes(wrongUnitNumber(item)));
+    localStorage.setItem(WRONG_STORAGE_KEY, JSON.stringify(wrong));
+    renderWrong();
+  };
+  if($('#backPractice')) $('#backPractice').onclick = () => {
+    mode = 'choice';
+    resetDeck();
+    render();
+  };
+}
+
+document.querySelectorAll('.mode').forEach(button => {
+  button.onclick = () => {
+    if(loading) return;
+    mode = button.dataset.mode;
+    currentQuestion = null;
+    if(mode !== 'wrong') resetDeck();
+    render();
+  };
+});
+
+buildUnitSelector();
+applyUnits(selectedUnits);
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/english_app/vocab-sw.js').catch(()=>{});}</script>
+<script src="/english_app/speech-upgrade.js"></script>
+</body>
+</html>
