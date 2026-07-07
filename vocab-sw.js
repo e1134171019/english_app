@@ -1,4 +1,5 @@
-const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260707-custom-units';
+const SPEECH_SCRIPT = '/english_app/speech-upgrade.js?v=20260707-toeic-part5';
+const TOEIC_SCRIPT = '/english_app/vocab-lab/toeic-part5-upgrade.js?v=20260707-toeic-part5';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -28,14 +29,25 @@ self.addEventListener('fetch', event => {
     if (!type.includes('text/html')) return response;
 
     let html = await response.text();
+
     if (!html.includes(SPEECH_SCRIPT)) {
       html = html.replace('</body>', `<script src="${SPEECH_SCRIPT}"></script></body>`);
+    }
+
+    if (
+      url.pathname.endsWith('/vocab-lab/comprehensive.html') &&
+      !html.includes(TOEIC_SCRIPT)
+    ) {
+      html = html.replace('</body>', `<script src="${TOEIC_SCRIPT}"></script></body>`);
     }
 
     return new Response(html, {
       status: response.status,
       statusText: response.statusText,
-      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store'
+      }
     });
   })());
 });
