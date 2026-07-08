@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260709-unit01-07-standard-v1';
+const ASSET_VERSION = '20260709-unit01-10-standard-v2';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
       html = html.replace('</body>', `<script src="${CATALOG_24_SCRIPT}"></script></body>`);
     }
 
-    const isLegacyUnit = /\/unit0[1-7]-vocab-lab\/(?:index\.html)?$/.test(url.pathname);
+    const isLegacyUnit = /\/unit(?:0[1-9]|10)-vocab-lab\/(?:index\.html)?$/.test(url.pathname);
     if (isLegacyUnit && !html.includes('/english_app/vocab-lab/legacy-unit-standard-upgrade.js')) {
       html = html.replace('</body>', `<script src="${LEGACY_STANDARD_SCRIPT}"></script></body>`);
     }
