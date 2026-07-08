@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260708-unit12-v1';
+const ASSET_VERSION = '20260708-unit13-v1';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_FAMILY_SCRIPT = `/english_app/vocab-lab/toeic-part5-family-fix.js?v=${ASSET_VERSION}`;
