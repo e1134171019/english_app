@@ -22,11 +22,11 @@
   }
 
   function readSavedUnits() {
-    for (const key of ['vocab_selected_units_v3', 'vocab_selected_units_v2', 'vocab_selected_units_v1']) {
+    for (const key of ['vocab_selected_units_v4', 'vocab_selected_units_v3', 'vocab_selected_units_v2', 'vocab_selected_units_v1']) {
       try {
         const saved = JSON.parse(localStorage.getItem(key) || '[]');
         const valid = [...new Set((Array.isArray(saved) ? saved : []).map(Number))]
-          .filter(no => Number.isInteger(no) && no >= 1 && no <= 19)
+          .filter(no => Number.isInteger(no) && no >= 1 && no <= 20)
           .sort((a, b) => a - b);
         if (valid.length) return valid;
       } catch (_) {}
@@ -35,22 +35,22 @@
   }
 
   function upgradeComprehensive() {
-    for (let old = 10; old <= 18; old++) {
-      replaceText('.brand p', `Unit 01～Unit ${String(old).padStart(2, '0')}`, 'Unit 01～Unit 19');
+    for (let old = 10; old <= 19; old++) {
+      replaceText('.brand p', `Unit 01～Unit ${String(old).padStart(2, '0')}`, 'Unit 01～Unit 20');
     }
 
-    if (typeof normalizeWord === 'function' && !normalizeWord.__unit19Patched) {
+    if (typeof normalizeWord === 'function' && !normalizeWord.__unit20Patched) {
       const originalNormalizeWord = normalizeWord;
       normalizeWord = function(item, unitNo) {
         return originalNormalizeWord(normalizeCompact(item), unitNo);
       };
-      normalizeWord.__unit19Patched = true;
+      normalizeWord.__unit20Patched = true;
     }
 
     const choices = document.querySelector('#unitChoices');
     if (!choices) return;
 
-    for (let no = 11; no <= 19; no++) {
+    for (let no = 11; no <= 20; no++) {
       if (choices.querySelector(`input[value="${no}"]`)) continue;
       const label = document.createElement('label');
       label.className = 'unitToggle';
@@ -78,7 +78,7 @@
           applyUnits(saved);
         }
       } catch (error) {
-        console.warn('Unit 19 comprehensive upgrade:', error);
+        console.warn('Unit 20 comprehensive upgrade:', error);
       }
     };
     applySaved();
@@ -86,29 +86,29 @@
 
   function upgradeGrammar() {
     try {
-      if (typeof extractWords === 'function' && !extractWords.__unit19Patched) {
+      if (typeof extractWords === 'function' && !extractWords.__unit20Patched) {
         const originalExtractWords = extractWords;
         extractWords = function(html) {
           return originalExtractWords(html).map(normalizeCompact);
         };
-        extractWords.__unit19Patched = true;
+        extractWords.__unit20Patched = true;
       }
 
       if (typeof unitSources === 'undefined') return;
-      for (let no = 8; no <= 19; no++) {
+      for (let no = 8; no <= 20; no++) {
         const unitName = `Unit ${String(no).padStart(2, '0')}`;
         if (!unitSources.some(([name]) => name === unitName)) {
           unitSources.push([unitName, `../unit${String(no).padStart(2, '0')}-vocab-lab/`]);
         }
       }
 
-      document.title = 'Unit 01-19 Exam Vocabulary Cloze';
+      document.title = 'Unit 01-20 Exam Vocabulary Cloze';
       const h1 = document.querySelector('.brand h1');
-      if (h1) h1.textContent = '1-19 課例句單字選擇題';
+      if (h1) h1.textContent = '1-20 課例句單字選擇題';
       const p = document.querySelector('.brand p');
-      if (p) p.textContent = '整合 Unit 01 到 Unit 19。重新整理頁面時會先把題目洗牌；按「下一題」會依照本次洗牌後的順序出題。中文與解析作答後才顯示。';
+      if (p) p.textContent = '整合 Unit 01 到 Unit 20。重新整理頁面時會先把題目洗牌；按「下一題」會依照本次洗牌後的順序出題。中文與解析作答後才顯示。';
       const loadingNode = document.querySelector('.loading');
-      if (loadingNode) loadingNode.textContent = '正在載入 Unit 01-19 題庫...';
+      if (loadingNode) loadingNode.textContent = '正在載入 Unit 01-20 題庫...';
 
       let attempts = 0;
       const timer = setInterval(() => {
@@ -119,7 +119,7 @@
         }
       }, 250);
     } catch (error) {
-      console.warn('Unit 19 grammar upgrade:', error);
+      console.warn('Unit 20 grammar upgrade:', error);
     }
   }
 
