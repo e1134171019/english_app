@@ -1,10 +1,11 @@
-const ASSET_VERSION = '20260708-unit20-v2';
+const ASSET_VERSION = '20260708-unit20-v3';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
 const UNIT_UPGRADE_SCRIPT = `/english_app/vocab-lab/unit11-upgrade.js?v=${ASSET_VERSION}`;
 const UNIT18_SCRIPT = `/english_app/unit18-v2.js?v=${ASSET_VERSION}`;
 const COMPREHENSIVE_20_SCRIPT = `/english_app/vocab-lab/comprehensive-unit20-upgrade.js?v=${ASSET_VERSION}`;
+const CATALOG_20_SCRIPT = `/english_app/vocab-lab/index-unit20-fallback.js?v=${ASSET_VERSION}`;
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -37,6 +38,11 @@ self.addEventListener('fetch', event => {
 
     if (!html.includes('/english_app/speech-upgrade.js')) {
       html = html.replace('</body>', `<script src="${SPEECH_SCRIPT}"></script></body>`);
+    }
+
+    const isCatalog = url.pathname.endsWith('/vocab-lab/') || url.pathname.endsWith('/vocab-lab/index.html');
+    if (isCatalog && !html.includes('/english_app/vocab-lab/index-unit20-fallback.js')) {
+      html = html.replace('</body>', `<script src="${CATALOG_20_SCRIPT}"></script></body>`);
     }
 
     const isUnit18 = url.pathname.endsWith('/unit18-vocab-lab/') || url.pathname.endsWith('/unit18-vocab-lab/index.html');
