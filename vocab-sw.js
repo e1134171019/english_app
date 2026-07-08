@@ -1,7 +1,6 @@
-const ASSET_VERSION = '20260708-unit18-v2';
+const ASSET_VERSION = '20260708-mixed-toeic-v3';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
-const TOEIC_FAMILY_SCRIPT = `/english_app/vocab-lab/toeic-part5-family-fix.js?v=${ASSET_VERSION}`;
 const UNIT11_SCRIPT = `/english_app/vocab-lab/unit11-upgrade.js?v=${ASSET_VERSION}`;
 const UNIT18_SCRIPT = `/english_app/unit18-v2.js?v=${ASSET_VERSION}`;
 const COMPREHENSIVE_18_SCRIPT = `/english_app/vocab-lab/comprehensive-unit18-upgrade.js?v=${ASSET_VERSION}`;
@@ -47,9 +46,6 @@ self.addEventListener('fetch', event => {
     if (url.pathname.endsWith('/vocab-lab/comprehensive.html')) {
       if (!html.includes('/english_app/vocab-lab/toeic-part5-upgrade.js')) {
         html = html.replace('</body>', `<script src="${TOEIC_SCRIPT}"></script></body>`);
-      }
-      if (!html.includes('/english_app/vocab-lab/toeic-part5-family-fix.js')) {
-        html = html.replace('</body>', `<script src="${TOEIC_FAMILY_SCRIPT}"></script></body>`);
       }
       if (!html.includes('/english_app/vocab-lab/unit11-upgrade.js')) {
         html = html.replace('</body>', `<script src="${UNIT11_SCRIPT}"></script></body>`);
