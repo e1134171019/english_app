@@ -1,10 +1,10 @@
-const ASSET_VERSION = '20260708-unit19-v1';
+const ASSET_VERSION = '20260708-unit20-v1';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
 const UNIT_UPGRADE_SCRIPT = `/english_app/vocab-lab/unit11-upgrade.js?v=${ASSET_VERSION}`;
 const UNIT18_SCRIPT = `/english_app/unit18-v2.js?v=${ASSET_VERSION}`;
-const COMPREHENSIVE_19_SCRIPT = `/english_app/vocab-lab/comprehensive-unit19-upgrade.js?v=${ASSET_VERSION}`;
+const COMPREHENSIVE_20_SCRIPT = `/english_app/vocab-lab/comprehensive-unit20-upgrade.js?v=${ASSET_VERSION}`;
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -54,8 +54,8 @@ self.addEventListener('fetch', event => {
       if (!html.includes('/english_app/vocab-lab/unit11-upgrade.js')) {
         html = html.replace('</body>', `<script src="${UNIT_UPGRADE_SCRIPT}"></script></body>`);
       }
-      if (!html.includes('/english_app/vocab-lab/comprehensive-unit19-upgrade.js')) {
-        html = html.replace('</body>', `<script src="${COMPREHENSIVE_19_SCRIPT}"></script></body>`);
+      if (!html.includes('/english_app/vocab-lab/comprehensive-unit20-upgrade.js')) {
+        html = html.replace('</body>', `<script src="${COMPREHENSIVE_20_SCRIPT}"></script></body>`);
       }
     }
 
