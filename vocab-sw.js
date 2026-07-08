@@ -1,11 +1,11 @@
-const ASSET_VERSION = '20260708-unit20-v3';
+const ASSET_VERSION = '20260708-unit21-v1';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
 const UNIT_UPGRADE_SCRIPT = `/english_app/vocab-lab/unit11-upgrade.js?v=${ASSET_VERSION}`;
 const UNIT18_SCRIPT = `/english_app/unit18-v2.js?v=${ASSET_VERSION}`;
-const COMPREHENSIVE_20_SCRIPT = `/english_app/vocab-lab/comprehensive-unit20-upgrade.js?v=${ASSET_VERSION}`;
-const CATALOG_20_SCRIPT = `/english_app/vocab-lab/index-unit20-fallback.js?v=${ASSET_VERSION}`;
+const COMPREHENSIVE_21_SCRIPT = `/english_app/vocab-lab/comprehensive-unit21-upgrade.js?v=${ASSET_VERSION}`;
+const CATALOG_21_SCRIPT = `/english_app/vocab-lab/index-unit21-fallback.js?v=${ASSET_VERSION}`;
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -41,8 +41,8 @@ self.addEventListener('fetch', event => {
     }
 
     const isCatalog = url.pathname.endsWith('/vocab-lab/') || url.pathname.endsWith('/vocab-lab/index.html');
-    if (isCatalog && !html.includes('/english_app/vocab-lab/index-unit20-fallback.js')) {
-      html = html.replace('</body>', `<script src="${CATALOG_20_SCRIPT}"></script></body>`);
+    if (isCatalog && !html.includes('/english_app/vocab-lab/index-unit21-fallback.js')) {
+      html = html.replace('</body>', `<script src="${CATALOG_21_SCRIPT}"></script></body>`);
     }
 
     const isUnit18 = url.pathname.endsWith('/unit18-vocab-lab/') || url.pathname.endsWith('/unit18-vocab-lab/index.html');
@@ -60,8 +60,8 @@ self.addEventListener('fetch', event => {
       if (!html.includes('/english_app/vocab-lab/unit11-upgrade.js')) {
         html = html.replace('</body>', `<script src="${UNIT_UPGRADE_SCRIPT}"></script></body>`);
       }
-      if (!html.includes('/english_app/vocab-lab/comprehensive-unit20-upgrade.js')) {
-        html = html.replace('</body>', `<script src="${COMPREHENSIVE_20_SCRIPT}"></script></body>`);
+      if (!html.includes('/english_app/vocab-lab/comprehensive-unit21-upgrade.js')) {
+        html = html.replace('</body>', `<script src="${COMPREHENSIVE_21_SCRIPT}"></script></body>`);
       }
     }
 
