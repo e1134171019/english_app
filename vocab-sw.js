@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260708-unit21-v1';
+const ASSET_VERSION = '20260708-unit21-v2';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
@@ -35,6 +35,10 @@ self.addEventListener('fetch', event => {
     if (!type.includes('text/html')) return response;
 
     let html = await response.text();
+    html = html.replace(
+      /<script\s+src=["']\/english_app\/speech-upgrade\.js["']><\/script>/g,
+      `<script src="${SPEECH_SCRIPT}"></script>`
+    );
 
     if (!html.includes('/english_app/speech-upgrade.js')) {
       html = html.replace('</body>', `<script src="${SPEECH_SCRIPT}"></script></body>`);
