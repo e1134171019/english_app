@@ -21,6 +21,41 @@
     };
   }
 
+  function parseWordsArray(source) {
+    const patterns = [/const\s+words\s*=\s*/, /\bwords\s*:\s*/];
+    let start = -1;
+    for (const pattern of patterns) {
+      const match = pattern.exec(source);
+      if (!match) continue;
+      start = source.indexOf('[', match.index + match[0].length);
+      if (start >= 0) break;
+    }
+    if (start < 0) throw new Error('找不到 words 題庫');
+
+    let depth = 0;
+    let quote = '';
+    let escaped = false;
+    for (let index = start; index < source.length; index++) {
+      const char = source[index];
+      if (quote) {
+        if (escaped) { escaped = false; continue; }
+        if (char === '\\') { escaped = true; continue; }
+        if (char === quote) quote = '';
+        continue;
+      }
+      if (char === '"' || char === "'" || char === '`') { quote = char; continue; }
+      if (char === '[') depth++;
+      if (char === ']') {
+        depth--;
+        if (depth === 0) {
+          const literal = source.slice(start, index + 1);
+          return Function(`"use strict";return (${literal});`)();
+        }
+      }
+    }
+    throw new Error('words 題庫陣列不完整');
+  }
+
   function readSavedUnits() {
     for (const key of ['vocab_selected_units_v4', 'vocab_selected_units_v3', 'vocab_selected_units_v2', 'vocab_selected_units_v1']) {
       try {
@@ -37,6 +72,13 @@
   function upgradeComprehensive() {
     for (let old = 10; old <= 19; old++) {
       replaceText('.brand p', `Unit 01～Unit ${String(old).padStart(2, '0')}`, 'Unit 01～Unit 20');
+    }
+
+    if (typeof extractWordsArray === 'function' && !extractWordsArray.__unit20Patched) {
+      extractWordsArray = function(source) {
+        return parseWordsArray(source);
+      };
+      extractWordsArray.__unit20Patched = true;
     }
 
     if (typeof normalizeWord === 'function' && !normalizeWord.__unit20Patched) {
@@ -87,9 +129,8 @@
   function upgradeGrammar() {
     try {
       if (typeof extractWords === 'function' && !extractWords.__unit20Patched) {
-        const originalExtractWords = extractWords;
         extractWords = function(html) {
-          return originalExtractWords(html).map(normalizeCompact);
+          return parseWordsArray(html).map(normalizeCompact);
         };
         extractWords.__unit20Patched = true;
       }
