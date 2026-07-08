@@ -11,6 +11,45 @@
     document.head.appendChild(style);
   }
 
+  function loadScriptOnce(src) {
+    const pathname = new URL(src, location.href).pathname;
+    const existing = [...document.scripts].find(script => {
+      try { return new URL(script.src, location.href).pathname === pathname; }
+      catch (_) { return false; }
+    });
+    if (existing) {
+      if (existing.dataset.loaded === '1' || existing.readyState === 'complete') return Promise.resolve();
+      return new Promise(resolve => {
+        existing.addEventListener('load', resolve, {once:true});
+        existing.addEventListener('error', resolve, {once:true});
+        setTimeout(resolve, 1200);
+      });
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.onload = () => { script.dataset.loaded = '1'; resolve(); };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function installVocabularyPageUpgrades() {
+    const path = location.pathname;
+    const version = '20260708-unit21-v2';
+    if (path.endsWith('/vocab-lab/comprehensive.html')) {
+      await loadScriptOnce(`/english_app/vocab-lab/toeic-part5-upgrade.js?v=${version}`);
+      await loadScriptOnce(`/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${version}`);
+      await loadScriptOnce(`/english_app/vocab-lab/unit11-upgrade.js?v=${version}`);
+      await loadScriptOnce(`/english_app/vocab-lab/comprehensive-unit21-upgrade.js?v=${version}`);
+    } else if (path.endsWith('/vocab-lab/grammar.html')) {
+      await loadScriptOnce(`/english_app/vocab-lab/unit11-upgrade.js?v=${version}`);
+    }
+  }
+
+  installVocabularyPageUpgrades().catch(error => console.warn('Vocabulary page bootstrap failed:', error));
+
   function speak(text) {
     if (!('speechSynthesis' in window)) {
       alert('這個瀏覽器不支援語音朗讀。');
@@ -76,7 +115,7 @@
 
   function getAnswerSentence(fb) {
     const lines = fb.textContent.split('\n').map(x => x.trim()).filter(Boolean);
-    return lines.find(x => /^[A-Za-z0-9'\"].*[.!?]$/.test(x));
+    return lines.find(x => /^[A-Za-z0-9'"].*[.!?]$/.test(x));
   }
 
   function feedbackHasBeenAnswered(fb) {
