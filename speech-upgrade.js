@@ -37,12 +37,12 @@
 
   async function installVocabularyPageUpgrades() {
     const path = location.pathname;
-    const version = '20260708-unit21-v2';
+    const version = '20260708-unit22-v1';
     if (path.endsWith('/vocab-lab/comprehensive.html')) {
       await loadScriptOnce(`/english_app/vocab-lab/toeic-part5-upgrade.js?v=${version}`);
       await loadScriptOnce(`/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${version}`);
       await loadScriptOnce(`/english_app/vocab-lab/unit11-upgrade.js?v=${version}`);
-      await loadScriptOnce(`/english_app/vocab-lab/comprehensive-unit21-upgrade.js?v=${version}`);
+      await loadScriptOnce(`/english_app/vocab-lab/comprehensive-unit22-upgrade.js?v=${version}`);
     } else if (path.endsWith('/vocab-lab/grammar.html')) {
       await loadScriptOnce(`/english_app/vocab-lab/unit11-upgrade.js?v=${version}`);
     }
