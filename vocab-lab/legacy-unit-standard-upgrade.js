@@ -4,11 +4,11 @@
   if (window.__legacyUnitStandardUpgradeLoaded) return;
   window.__legacyUnitStandardUpgradeLoaded = true;
 
-  const match = location.pathname.match(/\/unit(0[1-7])-vocab-lab\/(?:index\.html)?$/);
+  const match = location.pathname.match(/\/unit(0[1-9]|10)-vocab-lab\/(?:index\.html)?$/);
   if (!match) return;
 
   const unitNo = match[1];
-  const version = '20260709-legacy-standard-v1';
+  const version = '20260709-legacy-standard-v2';
 
   function unique(values) {
     return [...new Set((values || []).filter(Boolean).map(value => String(value).trim()).filter(Boolean))];
