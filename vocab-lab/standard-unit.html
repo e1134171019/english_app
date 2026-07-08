@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vocabulary Lab</title>
+<link rel="stylesheet" href="/english_app/vocab-lab/unit-standard.css?v=20260709-legacy-standard-v1">
+</head>
+<body>
+<main style="padding:32px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans TC',sans-serif">正在載入標準學習介面……</main>
+<script>
+(async () => {
+  'use strict';
+
+  const params = new URLSearchParams(location.search);
+  const rawUnit = params.get('unit') || '';
+  const number = Number(rawUnit);
+  if (!Number.isInteger(number) || number < 1 || number > 7) {
+    document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">課別參數錯誤。</p>';
+    return;
+  }
+
+  const unitNo = String(number).padStart(2, '0');
+  const sourceUrl = `../unit${unitNo}-vocab-lab/index.html?v=20260709-legacy-standard-v1`;
+
+  function unique(values) {
+    return [...new Set((values || []).filter(Boolean).map(value => String(value).trim()).filter(Boolean))];
+  }
+
+  function extractBalanced(source, start, openChar, closeChar) {
+    let depth = 0;
+    let quote = '';
+    let escaped = false;
+
+    for (let index = start; index < source.length; index++) {
+      const char = source[index];
+      if (quote) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if (char === quote) quote = '';
+        continue;
+      }
+      if (char === '"' || char === "'" || char === '`') {
+        quote = char;
+        continue;
+      }
+      if (char === openChar) depth++;
+      if (char === closeChar) {
+        depth--;
+        if (depth === 0) return source.slice(start, index + 1);
+      }
+    }
+    throw new Error('題庫陣列不完整');
+  }
+
+  function extractWords(source) {
+    const token = /const\s+words\s*=\s*/.exec(source);
+    if (!token) throw new Error('找不到 words 題庫');
+    const start = source.indexOf('[', token.index + token[0].length);
+    if (start < 0) throw new Error('找不到題庫陣列起點');
+    const literal = extractBalanced(source, start, '[', ']');
+    return Function(`"use strict";return (${literal});`)();
+  }
+
+  function normalize(item, index) {
+    const examples = Array.isArray(item.ex)
+      ? item.ex.filter(pair => Array.isArray(pair) && pair.length).map(pair => [String(pair[0] || ''), String(pair[1] || '')])
+      : [];
+
+    return {
+      word: String(item.word || item.w || '').trim(),
+      zh: String(item.zh || item.z || '').trim(),
+      pos: String(item.pos || item.p || '').trim(),
+      ipa: String(item.ipa || item.pron || item.i || '').trim(),
+      bookNo: String(item.bookNo || item.b || index + 1),
+      note: String(item.note || item.concept || '').trim(),
+      family: unique([...(item.family || []), ...(item.forms || []), ...(item.related || [])]),
+      syn: unique(item.syn || item.s || []),
+      ant: unique(item.ant || item.a || []),
+      ex: examples
+    };
+  }
+
+  try {
+    const response = await fetch(sourceUrl, {cache: 'no-store'});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const source = await response.text();
+    const rawWords = extractWords(source);
+    const words = rawWords.map(normalize).filter(item => item.word && item.zh);
+    if (!words.length) throw new Error('沒有可用單字');
+
+    window.VOCAB_UNIT = {
+      no: unitNo,
+      storageKey: `unit${unitNo}_vocab_wrong_standard_v1`,
+      words
+    };
+
+    const engine = document.createElement('script');
+    engine.src = '/english_app/vocab-lab/unit-standard-engine.js?v=20260709-legacy-standard-v1';
+    engine.async = false;
+    engine.onload = () => {
+      const speech = document.createElement('script');
+      speech.src = '/english_app/speech-upgrade.js?v=20260709-legacy-standard-v1';
+      document.body.appendChild(speech);
+    };
+    engine.onerror = () => {
+      document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">標準學習介面載入失敗，請重新整理。</p>';
+    };
+    document.body.appendChild(engine);
+  } catch (error) {
+    console.error(error);
+    document.body.innerHTML = `<p style="padding:24px;font-family:system-ui">Unit ${unitNo} 題庫載入失敗：${String(error.message || error)}</p>`;
+  }
+})();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/english_app/vocab-sw.js').catch(()=>{});}</script>
+</body>
+</html>
