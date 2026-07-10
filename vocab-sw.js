@@ -1,4 +1,4 @@
-const ASSET_VERSION = '20260709-unit01-10-standard-v2';
+const ASSET_VERSION = '20260709-hide-english-v1';
 const SPEECH_SCRIPT = `/english_app/speech-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_SCRIPT = `/english_app/vocab-lab/toeic-part5-upgrade.js?v=${ASSET_VERSION}`;
 const TOEIC_QUALITY_SCRIPT = `/english_app/vocab-lab/toeic-part5-quality-v5.js?v=${ASSET_VERSION}`;
@@ -8,6 +8,8 @@ const COMPREHENSIVE_24_SCRIPT = `/english_app/vocab-lab/comprehensive-unit24-upg
 const UNIT24_RANGE_SCRIPT = `/english_app/vocab-lab/unit24-range-upgrade.js?v=${ASSET_VERSION}`;
 const CATALOG_24_SCRIPT = `/english_app/vocab-lab/index-unit24-fallback.js?v=${ASSET_VERSION}`;
 const LEGACY_STANDARD_SCRIPT = `/english_app/vocab-lab/legacy-unit-standard-upgrade.js?v=${ASSET_VERSION}`;
+const UNIT_STANDARD_ENGINE_SCRIPT = `/english_app/vocab-lab/unit-standard-engine.js?v=${ASSET_VERSION}`;
+const UNIT_STANDARD_CSS = `/english_app/vocab-lab/unit-standard.css?v=${ASSET_VERSION}`;
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -38,8 +40,16 @@ self.addEventListener('fetch', event => {
 
     let html = await response.text();
     html = html.replace(
-      /<script\s+src=["']\/english_app\/speech-upgrade\.js["']><\/script>/g,
+      /<script\s+src=["']\/english_app\/speech-upgrade\.js(?:\?v=[^"']*)?["']><\/script>/g,
       `<script src="${SPEECH_SCRIPT}"></script>`
+    );
+    html = html.replace(
+      /\/english_app\/vocab-lab\/unit-standard-engine\.js\?v=[^"']*/g,
+      UNIT_STANDARD_ENGINE_SCRIPT
+    );
+    html = html.replace(
+      /\/english_app\/vocab-lab\/unit-standard\.css\?v=[^"']*/g,
+      UNIT_STANDARD_CSS
     );
 
     if (!html.includes('/english_app/speech-upgrade.js')) {
