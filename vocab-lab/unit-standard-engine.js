@@ -11,7 +11,7 @@
   const unitNo = String(config.no || '').padStart(2, '0');
   const storageKey = config.storageKey || `unit${unitNo}_vocab_wrong_v1`;
   const irregular = config.irregular || {};
-  const state = { view: 'learn', word: words[0].word, query: '', question: null, answered: false, wrong: readWrong() };
+  const state = { view: 'learn', word: words[0].word, query: '', question: null, answered: false, wrong: readWrong(), hideEnglish: false };
 
   const exampleCount = words.reduce((total, item) => total + (item.ex || []).length, 0);
   document.title = `Unit ${unitNo} Vocabulary Lab`;
@@ -116,7 +116,7 @@
 
   function target(sentence, item) {
     for (const form of variants(item)) {
-      const match = String(sentence).match(new RegExp(`\\b${escapeRegExp(form)}\\b`, 'i'));
+      const match = String(sentence).match(new RegExp(`\b${escapeRegExp(form)}\b`, 'i'));
       if (match) return match[0];
     }
     return '';
@@ -130,9 +130,21 @@
     return safe.replace(new RegExp(escapeRegExp(needle), 'i'), `<mark>${needle}</mark>`);
   }
 
+  function coverPlain(value, className = '') {
+    return `<span class="coveredText ${className}">${esc(value)}</span>`;
+  }
+
+  function coverHtml(html, className = '') {
+    return `<span class="coveredText ${className}">${html}</span>`;
+  }
+
+  function coverEnglishText(value) {
+    return esc(value).replace(/[A-Za-z][A-Za-z0-9'’.-]*(?:\s+[A-Za-z0-9'’.-]+)*/g, match => `<span class="coveredText">${match}</span>`);
+  }
+
   function chips(items, kind = '') {
     return items?.length
-      ? items.map(value => `<span class="chip ${kind}">${esc(value)}</span>`).join('')
+      ? items.map(value => `<span class="chip ${kind}">${coverEnglishText(value)}</span>`).join('')
       : '<span class="muted">—</span>';
   }
 
@@ -175,13 +187,29 @@
     saveWrong();
   }
 
+  function moveWord(step) {
+    const items = filtered();
+    if (!items.length) return;
+    const currentIndex = items.findIndex(item => item.word === state.word);
+    const index = currentIndex >= 0 ? currentIndex : 0;
+    const next = items[(index + step + items.length) % items.length];
+    state.word = next.word;
+    state.view = 'learn';
+    state.question = null;
+    render();
+    requestAnimationFrame(() => document.querySelector('.wi.on')?.scrollIntoView({ block: 'nearest' }));
+  }
+
   function renderList() {
     const items = filtered();
-    document.querySelector('#list').innerHTML = items.length
+    const hidden = state.hideEnglish && state.view === 'learn';
+    const list = document.querySelector('#list');
+    list.classList.toggle('hideEnglish', hidden);
+    list.innerHTML = items.length
       ? items.map(item => `
         <button class="wi ${item.word === state.word ? 'on' : ''}" data-word="${esc(item.word)}">
-          <b>${esc(item.word)}<span class="num">${esc(item.bookNo)}</span></b>
-          <small>${esc(item.pos)} · ${esc(item.zh)}</small>
+          <b>${coverPlain(item.word, 'listWord')}<span class="num">${esc(item.bookNo)}</span></b>
+          <small>${coverPlain(item.pos, 'listPos')} · ${esc(item.zh)}</small>
         </button>`).join('')
       : '<div class="empty">找不到資料</div>';
 
@@ -197,13 +225,19 @@
 
   function renderLearn() {
     const item = current();
+    const examples = item.ex || [];
+    document.querySelector('#stage').classList.toggle('hideEnglish', state.hideEnglish);
     document.querySelector('#stage').innerHTML = `
       <div class="head">
         <div>
-          <h2 class="word">${esc(item.word)}</h2>
-          <div class="muted">課本 ${esc(item.bookNo)}　${esc(item.pos)}　${esc(item.ipa)}</div>
+          <h2 class="word">${coverPlain(item.word, 'wordCover')}</h2>
+          <div class="muted">課本 ${esc(item.bookNo)}　${coverPlain(item.pos, 'inlineCover')}　${coverPlain(item.ipa, 'inlineCover')}</div>
         </div>
         <div class="actions">
+          <button class="btn ${state.hideEnglish ? 'active' : ''}" id="hideEnglish">🙈 全蓋住英文</button>
+          <button class="btn ${!state.hideEnglish ? 'active' : ''}" id="showEnglish">👁 顯示全部</button>
+          <button class="btn" id="prevWord">← 上一個</button>
+          <button class="btn main" id="nextWord">下一個單字 →</button>
           <button class="btn main" id="sayWord">🔊 單字</button>
           <button class="btn" id="sayExamples">🔊 全部例句</button>
         </div>
@@ -214,19 +248,30 @@
         <div class="box"><h3>近義詞</h3><div class="chips">${chips(item.syn, 'syn')}</div></div>
         <div class="box"><h3>反義詞</h3><div class="chips">${chips(item.ant, 'ant')}</div></div>
       </section>
-      <section class="examples">${(item.ex || []).map((pair, index) => `
+      <section class="examples">${examples.map((pair, index) => `
         <article class="ex">
-          <div class="exTop"><p>${index + 1}. ${highlight(pair[0], item)}</p><button data-say="${esc(pair[0])}">🔊</button></div>
+          <div class="exTop"><p>${index + 1}. ${coverHtml(highlight(pair[0], item), 'sentenceCover')}</p><button data-say="${esc(pair[0])}">🔊</button></div>
           <small>${esc(pair[1])}</small>
         </article>`).join('')}</section>`;
 
+    document.querySelector('#hideEnglish').onclick = () => {
+      state.hideEnglish = true;
+      render();
+    };
+    document.querySelector('#showEnglish').onclick = () => {
+      state.hideEnglish = false;
+      render();
+    };
+    document.querySelector('#prevWord').onclick = () => moveWord(-1);
+    document.querySelector('#nextWord').onclick = () => moveWord(1);
     document.querySelector('#sayWord').onclick = () => say(item.word);
     document.querySelector('#sayExamples').onclick = () => {
+      if (!examples.length || !('speechSynthesis' in window)) return;
       speechSynthesis.cancel();
       let index = 0;
       const next = () => {
-        if (index >= item.ex.length) return;
-        const speech = new SpeechSynthesisUtterance(item.ex[index++][0]);
+        if (index >= examples.length) return;
+        const speech = new SpeechSynthesisUtterance(examples[index++][0]);
         speech.lang = 'en-US';
         speech.rate = 0.78;
         speech.onend = () => setTimeout(next, 220);
@@ -238,6 +283,7 @@
   }
 
   function renderRead() {
+    document.querySelector('#stage').classList.remove('hideEnglish');
     const query = state.query.trim().toLowerCase();
     const rows = words
       .flatMap(item => (item.ex || []).map(example => ({ item, example })))
@@ -277,7 +323,7 @@
     const example = item.ex.find(pair => target(pair[0], item)) || item.ex[0] || ['', ''];
     const answer = target(example[0], item) || item.word;
     const prompt = example[0]
-      ? example[0].replace(new RegExp(`\\b${escapeRegExp(answer)}\\b`, 'i'), '_____')
+      ? example[0].replace(new RegExp(`\b${escapeRegExp(answer)}\b`, 'i'), '_____')
       : `請選出：${item.zh}`;
     return {
       mode,
@@ -298,6 +344,7 @@
   }
 
   function renderQuiz(mode) {
+    document.querySelector('#stage').classList.remove('hideEnglish');
     const question = ensureQuestion(mode);
     document.querySelector('#stage').innerHTML = `
       <div class="qcard"><small>${mode === 'type' ? '中翻英主動輸出' : '例句填空'}</small><p>${esc(question.prompt)}</p></div>
@@ -352,6 +399,7 @@
   }
 
   function renderWrong() {
+    document.querySelector('#stage').classList.remove('hideEnglish');
     document.querySelector('#stage').innerHTML = `
       <div class="head">
         <div><h2>錯題複習</h2><div class="muted">保存你的答案與答錯次數。</div></div>
@@ -416,6 +464,20 @@ ${esc(entry.example?.[1] || '')}</p>
       state.question = null;
       render();
     };
+  });
+
+  document.addEventListener('keydown', event => {
+    const active = document.activeElement;
+    const typing = active && ['INPUT', 'TEXTAREA'].includes(active.tagName);
+    if (typing || state.view !== 'learn') return;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      moveWord(1);
+    }
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      moveWord(-1);
+    }
   });
 
   render();
