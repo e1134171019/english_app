@@ -8,7 +8,7 @@
   if (!match) return;
 
   const unitNo = match[1];
-  const version = '20260709-legacy-standard-v2';
+  const version = '20260709-hide-english-v1';
 
   function unique(values) {
     return [...new Set((values || []).filter(Boolean).map(value => String(value).trim()).filter(Boolean))];
