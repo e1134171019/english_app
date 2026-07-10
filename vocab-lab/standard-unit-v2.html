@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Vocabulary Lab</title>
+<link rel="stylesheet" href="/english_app/vocab-lab/unit-standard.css?v=20260710-standard-loader-v4">
+</head>
+<body>
+<main id="loading" style="padding:32px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans TC',sans-serif">正在載入標準學習介面……</main>
+<script>
+(async function () {
+  'use strict';
+
+  var params = new URLSearchParams(location.search);
+  var number = Number(params.get('unit') || '');
+  var version = '20260710-standard-loader-v4';
+
+  if (!Number.isInteger(number) || number < 1 || number > 10) {
+    document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">課別參數錯誤。</p>';
+    return;
+  }
+
+  var unitNo = String(number).padStart(2, '0');
+  var sourceUrl = new URL('../unit' + unitNo + '-vocab-lab/index.html', location.href);
+  sourceUrl.searchParams.set('v', version + '-' + Date.now());
+
+  var failTimer = setTimeout(function () {
+    var loading = document.querySelector('#loading');
+    if (loading) loading.innerHTML = 'Unit ' + unitNo + ' 載入時間過長。請回總目錄重新進入，或改用無痕視窗開啟。';
+  }, 10000);
+
+  function unique(values) {
+    return Array.from(new Set((values || []).filter(Boolean).map(function (value) {
+      return String(value).trim();
+    }).filter(Boolean)));
+  }
+
+  function extractBalanced(source, start, openChar, closeChar) {
+    var depth = 0;
+    var quote = '';
+    var escaped = false;
+
+    for (var index = start; index < source.length; index++) {
+      var char = source[index];
+
+      if (quote) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char.charCodeAt(0) === 92) {
+          escaped = true;
+          continue;
+        }
+        if (char === quote) quote = '';
+        continue;
+      }
+
+      if (char === '"' || char === "'" || char === '`') {
+        quote = char;
+        continue;
+      }
+
+      if (char === openChar) depth++;
+      if (char === closeChar) {
+        depth--;
+        if (depth === 0) return source.slice(start, index + 1);
+      }
+    }
+    throw new Error('題庫陣列不完整');
+  }
+
+  function extractWords(source) {
+    var token = /const\s+words\s*=\s*/.exec(source);
+    if (!token) throw new Error('找不到 words 題庫');
+    var start = source.indexOf('[', token.index + token[0].length);
+    if (start < 0) throw new Error('找不到題庫陣列起點');
+    var literal = extractBalanced(source, start, '[', ']');
+    return Function('"use strict";return (' + literal + ');')();
+  }
+
+  function normalize(item, index) {
+    var examples = Array.isArray(item.ex)
+      ? item.ex.filter(function (pair) { return Array.isArray(pair) && pair.length; }).map(function (pair) { return [String(pair[0] || ''), String(pair[1] || '')]; })
+      : [];
+
+    return {
+      word: String(item.word || item.w || '').trim(),
+      zh: String(item.zh || item.z || '').trim(),
+      pos: String(item.pos || item.p || '').trim(),
+      ipa: String(item.ipa || item.pron || item.i || '').trim(),
+      bookNo: String(item.bookNo || item.b || index + 1),
+      note: String(item.note || item.concept || '').trim(),
+      family: unique([].concat(item.family || [], item.forms || [], item.related || [])),
+      syn: unique(item.syn || item.s || []),
+      ant: unique(item.ant || item.a || []),
+      ex: examples
+    };
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.body.appendChild(script);
+    });
+  }
+
+  try {
+    var response = await fetch(sourceUrl.href, { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    var source = await response.text();
+    var rawWords = extractWords(source);
+    var words = rawWords.map(normalize).filter(function (item) { return item.word && item.zh; });
+    if (!words.length) throw new Error('沒有可用單字');
+
+    window.VOCAB_UNIT = {
+      no: unitNo,
+      storageKey: 'unit' + unitNo + '_vocab_wrong_standard_v1',
+      words: words
+    };
+
+    await loadScript('/english_app/vocab-lab/unit-standard-engine.js?v=' + version);
+    clearTimeout(failTimer);
+    loadScript('/english_app/speech-upgrade.js?v=' + version).catch(function () {});
+  } catch (error) {
+    clearTimeout(failTimer);
+    console.error(error);
+    document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">Unit ' + unitNo + ' 題庫載入失敗：' + String(error.message || error) + '</p>';
+  }
+})();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/english_app/vocab-sw.js').catch(function(){});}</script>
+</body>
+</html>
