@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>Vocabulary Lab</title>
-<link rel="stylesheet" href="/english_app/vocab-lab/unit-standard.css?v=20260709-hide-english-v1">
+<link rel="stylesheet" href="/english_app/vocab-lab/unit-standard.css?v=20260710-standard-loader-v3">
 </head>
 <body>
-<main style="padding:32px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans TC',sans-serif">正在載入標準學習介面……</main>
+<main id="loading" style="padding:32px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans TC',sans-serif">正在載入標準學習介面……</main>
 <script>
 (async () => {
   'use strict';
@@ -15,14 +16,23 @@
   const params = new URLSearchParams(location.search);
   const rawUnit = params.get('unit') || '';
   const number = Number(rawUnit);
+  const version = '20260710-standard-loader-v3';
+
   if (!Number.isInteger(number) || number < 1 || number > 10) {
     document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">課別參數錯誤。</p>';
     return;
   }
 
   const unitNo = String(number).padStart(2, '0');
-  const version = '20260709-hide-english-v1';
-  const sourceUrl = `../unit${unitNo}-vocab-lab/index.html?v=${version}`;
+  const sourceUrl = new URL(`../unit${unitNo}-vocab-lab/index.html`, location.href);
+  sourceUrl.searchParams.set('v', version);
+
+  const failTimer = setTimeout(() => {
+    const loading = document.querySelector('#loading');
+    if (loading) {
+      loading.innerHTML = `Unit ${unitNo} 載入時間過長。請按 Ctrl + F5，或回總目錄重新進入。`;
+    }
+  }, 12000);
 
   function unique(values) {
     return [...new Set((values || []).filter(Boolean).map(value => String(value).trim()).filter(Boolean))];
@@ -89,7 +99,7 @@
   }
 
   try {
-    const response = await fetch(sourceUrl, {cache: 'no-store'});
+    const response = await fetch(sourceUrl.href, {cache: 'no-store'});
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const source = await response.text();
     const rawWords = extractWords(source);
@@ -106,15 +116,18 @@
     engine.src = `/english_app/vocab-lab/unit-standard-engine.js?v=${version}`;
     engine.async = false;
     engine.onload = () => {
+      clearTimeout(failTimer);
       const speech = document.createElement('script');
       speech.src = `/english_app/speech-upgrade.js?v=${version}`;
       document.body.appendChild(speech);
     };
     engine.onerror = () => {
+      clearTimeout(failTimer);
       document.body.innerHTML = '<p style="padding:24px;font-family:system-ui">標準學習介面載入失敗，請重新整理。</p>';
     };
     document.body.appendChild(engine);
   } catch (error) {
+    clearTimeout(failTimer);
     console.error(error);
     document.body.innerHTML = `<p style="padding:24px;font-family:system-ui">Unit ${unitNo} 題庫載入失敗：${String(error.message || error)}</p>`;
   }
